@@ -320,3 +320,60 @@ nav a.active {
   background: #eff6ff;
   color: #2563eb;
 }
+
+/* ── Page header with reset button ── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-header h1 {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+  flex: 1;
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.75rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #6b7280;
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  min-height: 36px;
+  flex-shrink: 0;
+}
+
+.btn-reset:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* restore h1 border to be on the whole header row */
+.page-header::after {
+  content: '';
+  display: block;
+  position: absolute;
+}
+
+.page > form,
+.page > .page-header {
+  border-bottom: none;
+}
+
+.page-header + form::before,
+.page > .page-header {
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 0.5rem;
+}

@@ -1,15 +1,26 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { PlatoonSelect } from '../components/PlatoonSelect'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { SoldierFormData, Platoon, PenColor } from '../types'
 import platoons from '../config/platoons.json'
 
-const IDF_RANKS = [
-  'טוראי', 'רב"ט', 'סמל', 'סמל ראשון', 'רב סמל',
-  'רב סמל ראשון', 'רב סמל מתקדם', 'רב סמל בכיר',
-  'סגן משנה', 'סגן', 'סרן', 'רב סרן',
-  'סגן אלוף', 'אלוף משנה', 'אלוף',
+const IDF_RANKS: { value: string; label: string }[] = [
+  { value: 'טור\'',  label: 'טור\' — טוראי' },
+  { value: 'רב"ט',  label: 'רב"ט — רב טוראי' },
+  { value: 'סמ\'',   label: 'סמ\' — סמל' },
+  { value: 'סמ"ר',  label: 'סמ"ר — סמל ראשון' },
+  { value: 'רס"ל',  label: 'רס"ל — רב סמל' },
+  { value: 'רס"ר',  label: 'רס"ר — רב סמל ראשון' },
+  { value: 'רס"מ',  label: 'רס"מ — רב סמל מתקדם' },
+  { value: 'רס"ב',  label: 'רס"ב — רב סמל בכיר' },
+  { value: 'סג"מ',  label: 'סג"מ — סגן משנה' },
+  { value: 'סגן',   label: 'סגן' },
+  { value: 'סרן',   label: 'סרן' },
+  { value: 'רס"ן',  label: 'רס"ן — רב סרן' },
+  { value: 'סא"ל',  label: 'סא"ל — סגן אלוף' },
+  { value: 'אל"מ',  label: 'אל"מ — אלוף משנה' },
+  { value: 'אלוף',  label: 'אלוף' },
 ]
 
 const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
@@ -17,6 +28,8 @@ const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
   { value: 'dark-blue', label: 'כחול כהה', hex: '#0d1b6b' },
   { value: 'blue',      label: 'כחול',    hex: '#1a60d1' },
 ]
+
+const STORAGE_KEY = 'soldierFormData'
 
 const EMPTY: SoldierFormData = {
   personalNumber: '',
@@ -38,10 +51,23 @@ const EMPTY: SoldierFormData = {
   penColor: 'black',
 }
 
+function loadSaved(): SoldierFormData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return { ...EMPTY, ...JSON.parse(raw) }
+  } catch {}
+  return EMPTY
+}
+
 export function SoldierForm() {
-  const [form, setForm] = useState<SoldierFormData>(EMPTY)
+  const [form, setForm] = useState<SoldierFormData>(loadSaved)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Persist every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
+  }, [form])
 
   const stayDays = useMemo(
     () => calcDays(form.departureDate, form.returnDate),
@@ -65,6 +91,13 @@ export function SoldierForm() {
   function removeStop(index: number) {
     const stops = form.flightRouteStops.filter((_, i) => i !== index)
     update('flightRouteStops', stops.length > 0 ? stops : [''])
+  }
+
+  function handleReset() {
+    if (confirm('לאפס את כל השדות?')) {
+      localStorage.removeItem(STORAGE_KEY)
+      setForm(EMPTY)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -95,7 +128,16 @@ export function SoldierForm() {
 
   return (
     <div className="page">
-      <h1>טופס היתר יציאה לחו"ל בשמ"פ</h1>
+      <div className="page-header">
+        <h1>טופס היתר יציאה לחו"ל בשמ"פ</h1>
+        <button type="button" className="btn-reset" onClick={handleReset} aria-label="אפס טופס">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          אפס
+        </button>
+      </div>
       <form onSubmit={handleSubmit}>
 
         <h2>1. פרטי משרת המילואים</h2>
@@ -122,8 +164,8 @@ export function SoldierForm() {
           <select id="rank" value={form.rank}
             onChange={(e) => update('rank', e.target.value)} required>
             <option value="">בחר דרגה</option>
-            {IDF_RANKS.map((r) => (
-              <option key={r} value={r}>{r}</option>
+            {IDF_RANKS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
         </div>
