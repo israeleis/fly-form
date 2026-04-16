@@ -18,4 +18,9 @@ describe('calcDays', () => {
     expect(calcDays('', '2026-04-16')).toBe(0)
     expect(calcDays('2026-04-16', '')).toBe(0)
   })
+
+  it('returns 0 for invalid date strings', () => {
+    expect(calcDays('not-a-date', '2026-04-16')).toBe(0)
+    expect(calcDays('2026-04-16', 'invalid')).toBe(0)
+  })
 })
