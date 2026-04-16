@@ -1,41 +1,53 @@
 // All coordinates are in pdf-lib points (origin: bottom-left of page).
-// These are approximate and may need adjustment after visual calibration.
-// Run the app in dev, generate a test PDF, and compare against the template.
+// Measured from calibration_output.pdf grid overlay. Verify after implementation
+// by generating a test PDF and comparing against the template.
 
-export const FONT_SIZE = 10
+export const MAX_FONT_SIZE = 12
+export const MIN_FONT_SIZE = 8
 
-export const COORDS = {
-  // Section 1 — Row 1 (top data row)
-  // White data cells span y≈660–680; place text at y=668 (middle of cell)
-  personalNumber:   { x: 430, y: 668 },
-  lastName:         { x: 310, y: 668 },
-  firstName:        { x: 210, y: 668 },
-  rank:             { x: 130, y: 668 },
-  travelPurpose:    { x: 50,  y: 668 },
+export type FieldBox = {
+  x: number
+  y: number
+  width: number
+  height: number
+  align?: 'left' | 'right'
+}
+
+export type SignatureBox = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export const COORDS: Record<string, FieldBox> = {
+  // Section 1 — Row 1
+  personalNumber:   { x: 465, y: 660, width: 110, height: 35 },
+  lastName:         { x: 365, y: 660, width: 100, height: 35 },
+  firstName:        { x: 265, y: 660, width: 100, height: 35 },
+  rank:             { x: 175, y: 660, width:  90, height: 35 },
+  travelPurpose:    { x:  25, y: 660, width: 150, height: 35 },
 
   // Section 1 — Row 2 (contact person)
-  // White data cells span y≈608–625; place text at y=615
-  contactLastName:  { x: 310, y: 615 },
-  contactFirstName: { x: 210, y: 615 },
-  contactAddress:   { x: 130, y: 615 },
-  contactPhone:     { x: 50,  y: 615 },
+  contactLastName:  { x: 365, y: 600, width: 100, height: 35 },
+  contactFirstName: { x: 265, y: 600, width: 100, height: 35 },
+  contactAddress:   { x: 130, y: 600, width: 135, height: 35 },
+  contactPhone:     { x:  25, y: 600, width: 105, height: 35 },
 
-  // Section 2 — Trip details row
-  // White data cells span y≈510–530; place text at y=518
-  destinationCountry: { x: 430, y: 518 },
-  departureDate:      { x: 310, y: 518 },
-  returnDate:         { x: 200, y: 518 },
-  stayDays:           { x: 90,  y: 518 },
+  // Section 2 — Trip details
+  destinationCountry: { x: 465, y: 525, width: 110, height: 30 },
+  departureDate:      { x: 360, y: 525, width: 105, height: 30 },
+  returnDate:         { x: 255, y: 525, width: 105, height: 30 },
+  stayDays:           { x: 155, y: 525, width: 100, height: 30 },
 
-  // Section 2b — Flight route (multiline, max 2 lines)
-  // Text area spans y≈420–460; place text at y=448
-  flightRoute: { x: 490, y: 448 },
+  // Section 2b — Flight route (right-aligned, supports multiline)
+  flightRoute: { x: 25, y: 413, width: 545, height: 32, align: 'right' },
 
   // Section 3 — Commander details
-  // Underline row spans y≈340–358; place text at y=348
-  commanderPersonalNumber: { x: 430, y: 348 },
-  commanderRank:           { x: 310, y: 348 },
-  commanderName:           { x: 200, y: 348 },
-  commanderDate:           { x: 100, y: 348 },
-  commanderSignature:      { x: 40,  y: 310, width: 120, height: 50 },
+  commanderPersonalNumber: { x: 450, y: 345, width:  90, height: 20 },
+  commanderRank:           { x: 375, y: 345, width:  75, height: 20 },
+  commanderName:           { x: 225, y: 345, width: 150, height: 20 },
+  commanderDate:           { x: 125, y: 345, width: 100, height: 20 },
 }
+
+export const SIGNATURE_BOX: SignatureBox = { x: 25, y: 295, width: 100, height: 50 }

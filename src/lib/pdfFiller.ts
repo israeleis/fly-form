@@ -3,7 +3,8 @@ import fontkit from '@pdf-lib/fontkit'
 import { SoldierFormData, Platoon } from '../types'
 import { calcDays } from './calcDays'
 import { svgToPng } from './svgToPng'
-import { COORDS, FONT_SIZE } from './pdfCoords'
+import { COORDS, SIGNATURE_BOX } from './pdfCoords'
+import { fitText } from './textFit'
 import { getFontStyleOption } from './fontStyles'
 
 function formatDate(iso: string): string {
@@ -47,50 +48,59 @@ export async function fillPdf(
 
   const textColor = penColorToRgb(formData.penColor)
 
-  const draw = (text: string, x: number, y: number) => {
-    page.drawText(text, {
-      x,
-      y,
-      size: FONT_SIZE,
-      font: selectedFont,
-      color: textColor,
+  function drawFitted(text: string, fieldName: keyof typeof COORDS) {
+    if (!text) return
+    const box = COORDS[fieldName]
+    const { lines, size, drawX, drawY, lineHeight } = fitText(text, box, selectedFont)
+    lines.forEach((line, i) => {
+      const x = box.align === 'right'
+        ? box.x + box.width - selectedFont.widthOfTextAtSize(line, size)
+        : drawX
+      page.drawText(line, {
+        x,
+        y: drawY - i * lineHeight,
+        size,
+        font: selectedFont,
+        color: textColor,
+      })
     })
   }
 
   // Section 1
-  draw(formData.personalNumber, COORDS.personalNumber.x, COORDS.personalNumber.y)
-  draw(formData.lastName,       COORDS.lastName.x,       COORDS.lastName.y)
-  draw(formData.firstName,      COORDS.firstName.x,      COORDS.firstName.y)
-  draw(formData.rank,           COORDS.rank.x,           COORDS.rank.y)
-  draw(formData.travelPurpose,  COORDS.travelPurpose.x,  COORDS.travelPurpose.y)
+  drawFitted(formData.personalNumber, 'personalNumber')
+  drawFitted(formData.lastName,       'lastName')
+  drawFitted(formData.firstName,      'firstName')
+  drawFitted(formData.rank,           'rank')
+  drawFitted(formData.travelPurpose,  'travelPurpose')
 
   const contactAddress = [formData.contactStreet, formData.contactHouseNumber, formData.contactCity]
     .filter(Boolean).join(' ')
-  draw(formData.contactLastName,  COORDS.contactLastName.x,  COORDS.contactLastName.y)
-  draw(formData.contactFirstName, COORDS.contactFirstName.x, COORDS.contactFirstName.y)
-  draw(contactAddress,            COORDS.contactAddress.x,   COORDS.contactAddress.y)
-  draw(formData.contactPhone,     COORDS.contactPhone.x,     COORDS.contactPhone.y)
+  drawFitted(formData.contactLastName,  'contactLastName')
+  drawFitted(formData.contactFirstName, 'contactFirstName')
+  drawFitted(contactAddress,            'contactAddress')
+  drawFitted(formData.contactPhone,     'contactPhone')
 
   // Section 2
-  draw(formData.destinationCountry, COORDS.destinationCountry.x, COORDS.destinationCountry.y)
-  draw(formatDate(formData.departureDate), COORDS.departureDate.x, COORDS.departureDate.y)
-  draw(formatDate(formData.returnDate),    COORDS.returnDate.x,    COORDS.returnDate.y)
+  drawFitted(formData.destinationCountry,        'destinationCountry')
+  drawFitted(formatDate(formData.departureDate), 'departureDate')
+  drawFitted(formatDate(formData.returnDate),    'returnDate')
   const days = calcDays(formData.departureDate, formData.returnDate)
-  draw(days > 0 ? String(days) : '', COORDS.stayDays.x, COORDS.stayDays.y)
+  drawFitted(days > 0 ? String(days) : '',       'stayDays')
+
   const flightRoute = formData.flightRouteStops.filter(Boolean).join(' - ')
-  draw(flightRoute, COORDS.flightRoute.x, COORDS.flightRoute.y)
+  drawFitted(flightRoute, 'flightRoute')
 
   // Section 3 — Commander (from platoon config)
   const { commander } = platoon
-  draw(commander.personalNumber, COORDS.commanderPersonalNumber.x, COORDS.commanderPersonalNumber.y)
-  draw(commander.rank,           COORDS.commanderRank.x,           COORDS.commanderRank.y)
-  draw(commander.name,           COORDS.commanderName.x,           COORDS.commanderName.y)
-  draw(todayFormatted(),         COORDS.commanderDate.x,           COORDS.commanderDate.y)
+  drawFitted(commander.personalNumber, 'commanderPersonalNumber')
+  drawFitted(commander.rank,           'commanderRank')
+  drawFitted(commander.name,           'commanderName')
+  drawFitted(todayFormatted(),         'commanderDate')
 
   // Commander signature (SVG → PNG → embed)
   const sigPng = await svgToPng(commander.signatureSvg)
   const sigImage = await pdfDoc.embedPng(sigPng)
-  const { x, y, width, height } = COORDS.commanderSignature
+  const { x, y, width, height } = SIGNATURE_BOX
   page.drawImage(sigImage, { x, y, width, height })
 
   return pdfDoc.save()
