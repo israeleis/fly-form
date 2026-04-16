@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import puppeteer, { Browser, Page } from 'puppeteer'
 import { createServer, ViteDevServer } from 'vite'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Use legacy pdfjs build (no canvas needed for text extraction)
 const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
@@ -86,7 +90,7 @@ let page: Page
 beforeAll(async () => {
   // Start Vite dev server
   server = await createServer({
-    root: '/Users/ieisenman/workspace/fly-form',
+    root: path.resolve(__dirname, '../..'),
     base: '/fly-form/',
     server: { port: PORT, strictPort: true },
     logLevel: 'silent',
@@ -258,8 +262,13 @@ describe('PDF form fill', () => {
     // Select platoon
     await page.select('select#platoon', 'platoon-example')
 
-    // Small wait for React to re-render stayDays after dates are set
-    await new Promise((r) => setTimeout(r, 300))
+    // Wait for React to compute stayDays after dates are filled
+    await page.waitForFunction(
+      () => Array.from(document.querySelectorAll('input[readonly]')).some(
+        (el) => (el as HTMLInputElement).value !== ''
+      ),
+      { timeout: 5000 }
+    )
 
     // Submit the form
     await page.click('button[type="submit"]')
