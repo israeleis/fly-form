@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, type CSSProperties } from 'react'
 import { PlatoonSelect } from '../components/PlatoonSelect'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { SoldierFormData, Platoon, PenColor } from '../types'
+import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
 import platoons from '../config/platoons.json'
 
 const IDF_RANKS: { value: string; label: string }[] = [
@@ -49,6 +50,7 @@ const EMPTY: SoldierFormData = {
   flightRouteStops: ['', ''],
   platoonId: '',
   penColor: 'black',
+  fontStyle: 'rubik',
 }
 
 function loadSaved(): SoldierFormData {
@@ -63,6 +65,10 @@ export function SoldierForm() {
   const [form, setForm] = useState<SoldierFormData>(loadSaved)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const selectedFont = getFontStyleOption(form.fontStyle)
+  const formStyle = {
+    ['--selected-form-font' as string]: selectedFont.cssFamily,
+  } as CSSProperties
 
   // Persist every change
   useEffect(() => {
@@ -138,7 +144,7 @@ export function SoldierForm() {
           אפס
         </button>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={formStyle}>
 
         <h2>1. פרטי משרת המילואים</h2>
 
@@ -273,17 +279,47 @@ export function SoldierForm() {
           <PlatoonSelect value={form.platoonId} onChange={(id) => update('platoonId', id)} />
         </div>
 
-        <h2>צבע כתיבה בטופס</h2>
-        <div className="pen-color-row">
-          {PEN_COLORS.map(({ value, label, hex }) => (
-            <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
-              <input type="radio" name="penColor" value={value}
-                checked={form.penColor === value}
-                onChange={() => update('penColor', value)} />
-              <span className="pen-swatch" style={{ background: hex }} />
-              {label}
-            </label>
-          ))}
+        <h2>סגנון כתיבה בטופס</h2>
+        <div className="field">
+          <label>בחר פונט</label>
+          <div className="font-style-grid" role="radiogroup" aria-label="בחירת פונט לטופס">
+            {FONT_STYLE_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className={`font-style-option${form.fontStyle === option.value ? ' selected' : ''}`}
+                style={{ ['--font-preview-family' as string]: option.cssFamily } as CSSProperties}
+              >
+                <input
+                  type="radio"
+                  name="fontStyle"
+                  value={option.value}
+                  checked={form.fontStyle === option.value}
+                  onChange={() => update('fontStyle', option.value)}
+                />
+                <span className="font-style-header">
+                  <span className="font-style-name">{option.label}</span>
+                  <span className="font-style-badge">{option.badge}</span>
+                </span>
+                <span className="font-style-preview">{option.previewText}</span>
+                <span className="font-style-description">{option.description}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <label>בחר צבע עט</label>
+          <div className="pen-color-row">
+            {PEN_COLORS.map(({ value, label, hex }) => (
+              <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
+                <input type="radio" name="penColor" value={value}
+                  checked={form.penColor === value}
+                  onChange={() => update('penColor', value)} />
+                <span className="pen-swatch" style={{ background: hex }} />
+                {label}
+              </label>
+            ))}
+          </div>
         </div>
 
         {error && <p className="error" role="alert">{error}</p>}
