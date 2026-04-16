@@ -64,11 +64,8 @@ export async function fillPdf(
   draw(formData.destinationCountry, COORDS.destinationCountry.x, COORDS.destinationCountry.y)
   draw(formatDate(formData.departureDate), COORDS.departureDate.x, COORDS.departureDate.y)
   draw(formatDate(formData.returnDate),    COORDS.returnDate.x,    COORDS.returnDate.y)
-  draw(
-    String(calcDays(formData.departureDate, formData.returnDate)),
-    COORDS.stayDays.x,
-    COORDS.stayDays.y
-  )
+  const days = calcDays(formData.departureDate, formData.returnDate)
+  draw(days > 0 ? String(days) : '', COORDS.stayDays.x, COORDS.stayDays.y)
   draw(formData.flightRoute, COORDS.flightRoute.x, COORDS.flightRoute.y)
 
   // Section 3 — Commander (from platoon config)

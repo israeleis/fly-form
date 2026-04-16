@@ -23,10 +23,13 @@ export function SignaturePad({ onSave }: Props) {
   function getPos(e: React.MouseEvent | React.TouchEvent): [number, number] {
     const canvas = canvasRef.current!
     const rect = canvas.getBoundingClientRect()
-    if ('touches' in e) {
+    if ('touches' in e && e.touches.length > 0) {
       return [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top]
     }
-    return [e.clientX - rect.left, e.clientY - rect.top]
+    if ('clientX' in e) {
+      return [e.clientX - rect.left, e.clientY - rect.top]
+    }
+    return [0, 0]
   }
 
   function startDraw(e: React.MouseEvent | React.TouchEvent) {
