@@ -1,10 +1,40 @@
+@font-face {
+  font-family: 'Rubik Local';
+  src: url('/Rubik-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alef';
+  src: url('/fonts/Alef-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'David Libre';
+  src: url('/fonts/DavidLibre-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Amatic SC';
+  src: url('/fonts/AmaticSC-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Solitreo';
+  src: url('/fonts/Solitreo-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: 'Rubik', sans-serif;
+  font-family: 'Rubik Local', 'Rubik', sans-serif;
   background: #f0f2f5;
   color: #171717;
   direction: rtl;
@@ -81,7 +111,7 @@ h2 {
   border-radius: 8px;
   padding: 0.65rem 0.75rem;
   font-size: 1rem;
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--selected-form-font, 'Rubik Local', 'Rubik', sans-serif);
   direction: rtl;
   background: white;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -126,7 +156,7 @@ h2 {
   border-radius: 8px;
   padding: 0.65rem 0.75rem;
   font-size: 1rem;
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--selected-form-font, 'Rubik Local', 'Rubik', sans-serif);
   direction: rtl;
   background: white;
   min-height: 44px;
@@ -186,7 +216,6 @@ h2 {
 .pen-color-row {
   display: flex;
   gap: 0.6rem;
-  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -225,6 +254,84 @@ h2 {
   border: 1px solid rgba(0,0,0,0.15);
 }
 
+/* ── Font style selector ── */
+.font-style-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.font-style-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.8rem 0.85rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  min-height: 132px;
+  user-select: none;
+}
+
+.font-style-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.font-style-option:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+}
+
+.font-style-option.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.10);
+}
+
+.font-style-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.font-style-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.font-style-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.font-style-preview {
+  font-family: var(--font-preview-family, 'Rubik Local', 'Rubik', sans-serif);
+  font-size: 1.15rem;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+}
+
+.font-style-description {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
 /* ── Submit button ── */
 button[type="submit"] {
   display: block;
@@ -236,7 +343,7 @@ button[type="submit"] {
   border: none;
   border-radius: 10px;
   font-size: 1.05rem;
-  font-family: 'Rubik', sans-serif;
+  font-family: 'Rubik Local', 'Rubik', sans-serif;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -272,7 +379,7 @@ button[type="submit"]:disabled {
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   background: white;
-  font-family: 'Rubik', sans-serif;
+  font-family: 'Rubik Local', 'Rubik', sans-serif;
   cursor: pointer;
   font-size: 0.875rem;
   min-height: 44px;
@@ -346,7 +453,7 @@ nav a.active {
   border-radius: 8px;
   background: white;
   color: #6b7280;
-  font-family: 'Rubik', sans-serif;
+  font-family: 'Rubik Local', 'Rubik', sans-serif;
   font-size: 0.8rem;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;

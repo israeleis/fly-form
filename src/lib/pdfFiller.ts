@@ -4,6 +4,7 @@ import { SoldierFormData, Platoon } from '../types'
 import { calcDays } from './calcDays'
 import { svgToPng } from './svgToPng'
 import { COORDS, FONT_SIZE } from './pdfCoords'
+import { getFontStyleOption } from './fontStyles'
 
 function formatDate(iso: string): string {
   if (!iso) return ''
@@ -36,10 +37,10 @@ export async function fillPdf(
   const pdfDoc = await PDFDocument.load(existingPdfBytes)
   pdfDoc.registerFontkit(fontkit)
 
-  // Load Hebrew font
-  const fontUrl = import.meta.env.BASE_URL + 'Rubik-Regular.ttf'
+  // Load the selected Hebrew font
+  const fontUrl = import.meta.env.BASE_URL + getFontStyleOption(formData.fontStyle).assetPath
   const fontBytes = await fetch(fontUrl).then((r) => r.arrayBuffer())
-  const rubikFont = await pdfDoc.embedFont(fontBytes)
+  const selectedFont = await pdfDoc.embedFont(fontBytes)
 
   const pages = pdfDoc.getPages()
   const page = pages[0]
@@ -51,7 +52,7 @@ export async function fillPdf(
       x,
       y,
       size: FONT_SIZE,
-      font: rubikFont,
+      font: selectedFont,
       color: textColor,
     })
   }
