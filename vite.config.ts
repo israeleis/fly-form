@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [react()],
   base: '/fly-form/',
   test: {
-    environment: 'node',
+    environment: 'jsdom',
   },
 })
