@@ -2,8 +2,21 @@ import { useState, useMemo } from 'react'
 import { PlatoonSelect } from '../components/PlatoonSelect'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
-import { SoldierFormData, Platoon } from '../types'
+import { SoldierFormData, Platoon, PenColor } from '../types'
 import platoons from '../config/platoons.json'
+
+const IDF_RANKS = [
+  'טוראי', 'רב"ט', 'סמל', 'סמל ראשון', 'רב סמל',
+  'רב סמל ראשון', 'רב סמל מתקדם', 'רב סמל בכיר',
+  'סגן משנה', 'סגן', 'סרן', 'רב סרן',
+  'סגן אלוף', 'אלוף משנה', 'אלוף',
+]
+
+const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
+  { value: 'black',     label: 'שחור',    hex: '#171717' },
+  { value: 'dark-blue', label: 'כחול כהה', hex: '#0d1b6b' },
+  { value: 'blue',      label: 'כחול',    hex: '#1a60d1' },
+]
 
 const EMPTY: SoldierFormData = {
   personalNumber: '',
@@ -13,13 +26,16 @@ const EMPTY: SoldierFormData = {
   travelPurpose: '',
   contactLastName: '',
   contactFirstName: '',
-  contactAddress: '',
+  contactStreet: '',
+  contactHouseNumber: '',
+  contactCity: '',
   contactPhone: '',
   destinationCountry: '',
   departureDate: '',
   returnDate: '',
-  flightRoute: '',
+  flightRouteStops: ['', ''],
   platoonId: '',
+  penColor: 'black',
 }
 
 export function SoldierForm() {
@@ -32,8 +48,23 @@ export function SoldierForm() {
     [form.departureDate, form.returnDate]
   )
 
-  function update(field: keyof SoldierFormData, value: string) {
+  function update<K extends keyof SoldierFormData>(field: K, value: SoldierFormData[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function updateStop(index: number, value: string) {
+    const stops = [...form.flightRouteStops]
+    stops[index] = value
+    update('flightRouteStops', stops)
+  }
+
+  function addStop() {
+    update('flightRouteStops', [...form.flightRouteStops, ''])
+  }
+
+  function removeStop(index: number) {
+    const stops = form.flightRouteStops.filter((_, i) => i !== index)
+    update('flightRouteStops', stops.length > 0 ? stops : [''])
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -68,85 +99,152 @@ export function SoldierForm() {
       <form onSubmit={handleSubmit}>
 
         <h2>1. פרטי משרת המילואים</h2>
-        <div className="form-row">
-          <div className="field">
-            <label>מספר אישי</label>
-            <input value={form.personalNumber} onChange={(e) => update('personalNumber', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>שם משפחה</label>
-            <input value={form.lastName} onChange={(e) => update('lastName', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>שם פרטי</label>
-            <input value={form.firstName} onChange={(e) => update('firstName', e.target.value)} required />
-          </div>
+
+        <div className="field">
+          <label htmlFor="personalNumber">מספר אישי</label>
+          <input id="personalNumber" inputMode="numeric" value={form.personalNumber}
+            onChange={(e) => update('personalNumber', e.target.value)} required />
         </div>
         <div className="form-row">
           <div className="field">
-            <label>דרגה</label>
-            <input value={form.rank} onChange={(e) => update('rank', e.target.value)} required />
+            <label htmlFor="lastName">שם משפחה</label>
+            <input id="lastName" value={form.lastName}
+              onChange={(e) => update('lastName', e.target.value)} required />
           </div>
           <div className="field">
-            <label>מטרת נסיעה</label>
-            <input value={form.travelPurpose} onChange={(e) => update('travelPurpose', e.target.value)} required />
+            <label htmlFor="firstName">שם פרטי</label>
+            <input id="firstName" value={form.firstName}
+              onChange={(e) => update('firstName', e.target.value)} required />
           </div>
+        </div>
+        <div className="field">
+          <label htmlFor="rank">דרגה</label>
+          <select id="rank" value={form.rank}
+            onChange={(e) => update('rank', e.target.value)} required>
+            <option value="">בחר דרגה</option>
+            {IDF_RANKS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="travelPurpose">מטרת נסיעה</label>
+          <input id="travelPurpose" value={form.travelPurpose}
+            onChange={(e) => update('travelPurpose', e.target.value)} required />
         </div>
 
         <h2>איש קשר בארץ</h2>
+
         <div className="form-row">
           <div className="field">
-            <label>שם משפחה</label>
-            <input value={form.contactLastName} onChange={(e) => update('contactLastName', e.target.value)} required />
+            <label htmlFor="contactLastName">שם משפחה</label>
+            <input id="contactLastName" value={form.contactLastName}
+              onChange={(e) => update('contactLastName', e.target.value)} required />
           </div>
           <div className="field">
-            <label>שם פרטי</label>
-            <input value={form.contactFirstName} onChange={(e) => update('contactFirstName', e.target.value)} required />
+            <label htmlFor="contactFirstName">שם פרטי</label>
+            <input id="contactFirstName" value={form.contactFirstName}
+              onChange={(e) => update('contactFirstName', e.target.value)} required />
           </div>
         </div>
         <div className="form-row">
-          <div className="field">
-            <label>כתובת עדכנית</label>
-            <input value={form.contactAddress} onChange={(e) => update('contactAddress', e.target.value)} required />
+          <div className="field" style={{ flex: 2 }}>
+            <label htmlFor="contactStreet">רחוב</label>
+            <input id="contactStreet" value={form.contactStreet}
+              onChange={(e) => update('contactStreet', e.target.value)} required />
           </div>
-          <div className="field">
-            <label>טלפון</label>
-            <input type="tel" value={form.contactPhone} onChange={(e) => update('contactPhone', e.target.value)} required />
+          <div className="field house-num">
+            <label htmlFor="contactHouseNumber">מס'</label>
+            <input id="contactHouseNumber" inputMode="numeric" value={form.contactHouseNumber}
+              onChange={(e) => update('contactHouseNumber', e.target.value)} required />
           </div>
+          <div className="field" style={{ flex: 1.5 }}>
+            <label htmlFor="contactCity">עיר</label>
+            <input id="contactCity" value={form.contactCity}
+              onChange={(e) => update('contactCity', e.target.value)} required />
+          </div>
+        </div>
+        <div className="field">
+          <label htmlFor="contactPhone">טלפון</label>
+          <input id="contactPhone" type="tel" inputMode="tel" value={form.contactPhone}
+            onChange={(e) => update('contactPhone', e.target.value)} required />
         </div>
 
         <h2>2. פרטי הבקשה</h2>
-        <div className="form-row">
-          <div className="field">
-            <label>מדינת יעד</label>
-            <input value={form.destinationCountry} onChange={(e) => update('destinationCountry', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>תאריך יציאה</label>
-            <input type="date" value={form.departureDate} onChange={(e) => update('departureDate', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>תאריך חזרה</label>
-            <input type="date" value={form.returnDate} onChange={(e) => update('returnDate', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>כמות ימי שהייה</label>
-            <input value={stayDays > 0 ? String(stayDays) : ''} readOnly />
-          </div>
+
+        <div className="field">
+          <label htmlFor="destinationCountry">מדינת יעד</label>
+          <input id="destinationCountry" value={form.destinationCountry}
+            onChange={(e) => update('destinationCountry', e.target.value)} required />
         </div>
         <div className="form-row">
           <div className="field">
-            <label>פירוט מסלול הטיסה (כולל קונקשין)</label>
-            <textarea value={form.flightRoute} onChange={(e) => update('flightRoute', e.target.value)} required />
+            <label htmlFor="departureDate">תאריך יציאה</label>
+            <input id="departureDate" type="date" value={form.departureDate}
+              onChange={(e) => update('departureDate', e.target.value)} required />
+          </div>
+          <div className="field">
+            <label htmlFor="returnDate">תאריך חזרה</label>
+            <input id="returnDate" type="date" value={form.returnDate}
+              onChange={(e) => update('returnDate', e.target.value)} required />
+          </div>
+        </div>
+        <div className="field">
+          <label>כמות ימי שהייה</label>
+          <input value={stayDays > 0 ? String(stayDays) : ''} readOnly
+            aria-label="כמות ימי שהייה מחושבת אוטומטית" />
+        </div>
+
+        <div className="field">
+          <label>מסלול טיסה (כולל קונקשין)</label>
+          <div className="stops-list">
+            {form.flightRouteStops.map((stop, i) => (
+              <div key={i} className="stop-row">
+                <input
+                  value={stop}
+                  placeholder={i === 0 ? 'נקודת מוצא (לדוגמה: תל אביב)' : `עצירה ${i + 1}`}
+                  onChange={(e) => updateStop(i, e.target.value)}
+                  required={i === 0}
+                  aria-label={`עצירה ${i + 1}`}
+                />
+                {form.flightRouteStops.length > 1 && (
+                  <button type="button" className="btn-remove" onClick={() => removeStop(i)}
+                    aria-label="הסר עצירה">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="btn-add-stop" onClick={addStop}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              הוסף עצירה
+            </button>
           </div>
         </div>
 
         <h2>פלוגה</h2>
-        <div className="form-row">
+        <div className="field">
           <PlatoonSelect value={form.platoonId} onChange={(id) => update('platoonId', id)} />
         </div>
 
-        {error && <p className="error">{error}</p>}
+        <h2>צבע כתיבה בטופס</h2>
+        <div className="pen-color-row">
+          {PEN_COLORS.map(({ value, label, hex }) => (
+            <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
+              <input type="radio" name="penColor" value={value}
+                checked={form.penColor === value}
+                onChange={() => update('penColor', value)} />
+              <span className="pen-swatch" style={{ background: hex }} />
+              {label}
+            </label>
+          ))}
+        </div>
+
+        {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" disabled={loading}>
           {loading ? 'מייצר טופס...' : 'הורד טופס ממולא'}
         </button>

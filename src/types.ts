@@ -11,6 +11,8 @@ export interface Platoon {
   commander: Commander;
 }
 
+export type PenColor = 'black' | 'dark-blue' | 'blue'
+
 export interface SoldierFormData {
   // Section 1
   personalNumber: string;
@@ -20,13 +22,17 @@ export interface SoldierFormData {
   travelPurpose: string;
   contactLastName: string;
   contactFirstName: string;
-  contactAddress: string;
+  contactStreet: string;
+  contactHouseNumber: string;
+  contactCity: string;
   contactPhone: string;
   // Section 2
   destinationCountry: string;
   departureDate: string; // ISO date string YYYY-MM-DD
   returnDate: string;    // ISO date string YYYY-MM-DD
-  flightRoute: string;
+  flightRouteStops: string[];
   // Platoon selection
   platoonId: string;
+  // PDF appearance
+  penColor: PenColor;
 }

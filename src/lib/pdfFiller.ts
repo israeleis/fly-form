@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib'
+import { PDFDocument, rgb, Color } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 import { SoldierFormData, Platoon } from '../types'
 import { calcDays } from './calcDays'
@@ -17,6 +17,12 @@ function todayFormatted(): string {
   const m = String(now.getMonth() + 1).padStart(2, '0')
   const y = now.getFullYear()
   return `${d}/${m}/${y}`
+}
+
+function penColorToRgb(penColor: SoldierFormData['penColor']): Color {
+  if (penColor === 'dark-blue') return rgb(0.05, 0.10, 0.45)
+  if (penColor === 'blue')      return rgb(0.10, 0.38, 0.82)
+  return rgb(0, 0, 0)
 }
 
 export async function fillPdf(
@@ -38,13 +44,15 @@ export async function fillPdf(
   const pages = pdfDoc.getPages()
   const page = pages[0]
 
+  const textColor = penColorToRgb(formData.penColor)
+
   const draw = (text: string, x: number, y: number) => {
     page.drawText(text, {
       x,
       y,
       size: FONT_SIZE,
       font: rubikFont,
-      color: rgb(0, 0, 0),
+      color: textColor,
     })
   }
 
@@ -55,9 +63,11 @@ export async function fillPdf(
   draw(formData.rank,           COORDS.rank.x,           COORDS.rank.y)
   draw(formData.travelPurpose,  COORDS.travelPurpose.x,  COORDS.travelPurpose.y)
 
+  const contactAddress = [formData.contactStreet, formData.contactHouseNumber, formData.contactCity]
+    .filter(Boolean).join(' ')
   draw(formData.contactLastName,  COORDS.contactLastName.x,  COORDS.contactLastName.y)
   draw(formData.contactFirstName, COORDS.contactFirstName.x, COORDS.contactFirstName.y)
-  draw(formData.contactAddress,   COORDS.contactAddress.x,   COORDS.contactAddress.y)
+  draw(contactAddress,            COORDS.contactAddress.x,   COORDS.contactAddress.y)
   draw(formData.contactPhone,     COORDS.contactPhone.x,     COORDS.contactPhone.y)
 
   // Section 2
@@ -66,7 +76,8 @@ export async function fillPdf(
   draw(formatDate(formData.returnDate),    COORDS.returnDate.x,    COORDS.returnDate.y)
   const days = calcDays(formData.departureDate, formData.returnDate)
   draw(days > 0 ? String(days) : '', COORDS.stayDays.x, COORDS.stayDays.y)
-  draw(formData.flightRoute, COORDS.flightRoute.x, COORDS.flightRoute.y)
+  const flightRoute = formData.flightRouteStops.filter(Boolean).join(' - ')
+  draw(flightRoute, COORDS.flightRoute.x, COORDS.flightRoute.y)
 
   // Section 3 — Commander (from platoon config)
   const { commander } = platoon
