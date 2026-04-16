@@ -22,6 +22,7 @@ const EMPTY: CommanderData = {
 export function CommanderSetup() {
   const [form, setForm] = useState<CommanderData>(EMPTY)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   function update(field: keyof CommanderData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -29,8 +30,9 @@ export function CommanderSetup() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError('')
     if (!form.signatureSvg) {
-      alert('יש לצייר ולשמור חתימה לפני השליחה')
+      setError('יש לצייר ולשמור חתימה לפני השליחה')
       return
     }
 
@@ -53,8 +55,8 @@ export function CommanderSetup() {
   if (sent) {
     return (
       <div className="page">
-        <h1>נשלח בהצלחה</h1>
-        <p>הפרטים נשלחו לאחראי המערכת. הם יתווספו לתצורה בהקדם.</p>
+        <h1>WhatsApp נפתח</h1>
+        <p>אשר את שליחת ההודעה ב-WhatsApp כדי להעביר את הפרטים לאחראי המערכת.</p>
       </div>
     )
   }
@@ -93,6 +95,7 @@ export function CommanderSetup() {
           <p style={{ color: '#16a34a', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ חתימה נשמרה</p>
         )}
 
+        {error && <p className="error">{error}</p>}
         <button type="submit">שלח דרך WhatsApp</button>
       </form>
     </div>
