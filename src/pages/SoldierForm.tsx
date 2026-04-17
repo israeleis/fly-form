@@ -74,9 +74,10 @@ export function SoldierForm() {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
   } as CSSProperties
 
-  // Persist every change
+  // Persist every change (excluding commander)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
+    const { commander, ...toSave } = form
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
   }, [form])
 
   // Parse commander from URL on mount
