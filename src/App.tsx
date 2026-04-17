@@ -1,28 +1,31 @@
-import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { HashRouter, Routes, Route, NavLink, useSearchParams } from 'react-router-dom'
 import { SoldierForm } from './pages/SoldierForm'
 import { CommanderSetup } from './pages/CommanderSetup'
 
-export default function App() {
+function NavBar() {
+  const [searchParams] = useSearchParams()
+  const hasCommanderParam = searchParams.has('c')
+
   return (
-    <HashRouter>
-      <nav style={{
-        background: '#1e40af',
-        padding: '0.75rem 1.5rem',
-        display: 'flex',
-        gap: '1.5rem',
-        justifyContent: 'flex-end',
-      }}>
-        <NavLink
-          to="/"
-          end
-          style={({ isActive }) => ({
-            color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-          })}
-        >
-          טופס חייל
-        </NavLink>
+    <nav style={{
+      background: '#1e40af',
+      padding: '0.75rem 1.5rem',
+      display: 'flex',
+      gap: '1.5rem',
+      justifyContent: 'flex-end',
+    }}>
+      <NavLink
+        to="/"
+        end
+        style={({ isActive }) => ({
+          color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
+          textDecoration: 'none',
+          fontSize: '0.9rem',
+        })}
+      >
+        טופס חייל
+      </NavLink>
+      {!hasCommanderParam && (
         <NavLink
           to="/commander"
           style={({ isActive }) => ({
@@ -33,7 +36,15 @@ export default function App() {
         >
           הגדרת מפקד
         </NavLink>
-      </nav>
+      )}
+    </nav>
+  )
+}
+
+export default function App() {
+  return (
+    <HashRouter>
+      <NavBar />
       <Routes>
         <Route path="/" element={<SoldierForm />} />
         <Route path="/commander" element={<CommanderSetup />} />
