@@ -44,7 +44,7 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
       typeof p.penColor === 'string' &&
       typeof p.fontStyle === 'string' &&
       ['black', 'dark-blue', 'blue'].includes(p.penColor) &&
-      ['rubik', 'alef', 'david-libre', 'amatic-sc', 'solitreo', 'fredoka-one'].includes(p.fontStyle)
+      ['rubik', 'alef', 'david-libre', 'amatic-sc', 'caveat', 'fredoka-one'].includes(p.fontStyle)
     ) {
       return parsed as CommanderConfig
     }
