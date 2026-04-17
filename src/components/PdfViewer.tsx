@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+// Set worker path - it's served from public folder
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/fly-form/pdf.worker.min.js'
 
 interface PdfViewerProps {
   pdfUrl: string
