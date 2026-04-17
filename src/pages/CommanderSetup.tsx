@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SignaturePad } from '../components/SignaturePad'
+import { encodeConfig } from '../lib/configEncoder'
 
 const ADMIN_WHATSAPP = 'YOUR_WHATSAPP_NUMBER'
 
@@ -23,6 +24,7 @@ export function CommanderSetup() {
   const [form, setForm] = useState<CommanderData>(EMPTY)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [copiedLink, setCopiedLink] = useState(false)
 
   function update(field: keyof CommanderData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -50,6 +52,32 @@ export function CommanderSetup() {
     const text = encodeURIComponent(JSON.stringify(payload, null, 2))
     window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank')
     setSent(true)
+  }
+
+  function handleGenerateLink() {
+    if (!form.signatureSvg) {
+      setError('יש לצייר ולשמור חתימה לפני יצירת קישור')
+      return
+    }
+
+    const config = {
+      name: form.name,
+      rank: form.rank,
+      personalNumber: form.personalNumber,
+      signatureSvg: form.signatureSvg,
+    }
+
+    const encoded = encodeConfig(config)
+    const baseUrl = window.location.origin + window.location.pathname
+    const shareUrl = `${baseUrl}#/?commander=${encoded}`
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 3000)
+    }).catch(() => {
+      setError('לא הצליח להעתיק קישור')
+    })
   }
 
   if (sent) {
@@ -93,6 +121,18 @@ export function CommanderSetup() {
         <SignaturePad onSave={(svg) => update('signatureSvg', svg)} />
         {form.signatureSvg && (
           <p style={{ color: '#16a34a', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ חתימה נשמרה</p>
+        )}
+
+        {form.signatureSvg && (
+          <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem' }}>
+            <h3 style={{ margin: '0 0 0.5rem 0' }}>שתף קישור עם חיילים</h3>
+            <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 0.75rem 0' }}>
+              חיילים יוכלו לפתוח את הקישור וההפרטים שלך יתמלאו אוטומטית
+            </p>
+            <button type="button" onClick={handleGenerateLink} style={{ background: '#10b981' }}>
+              {copiedLink ? '✓ הועתק' : 'צור קישור משותף'}
+            </button>
+          </div>
         )}
 
         {error && <p className="error">{error}</p>}
