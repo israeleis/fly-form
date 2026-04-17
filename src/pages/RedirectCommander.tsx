@@ -1,15 +1,21 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { getCommanderConfig } from '../lib/commanderConfigs'
 
 export function RedirectCommander() {
-  const { encoded } = useParams<{ encoded: string }>()
+  const { key } = useParams<{ key: string }>()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (encoded) {
-      navigate(`/?c=${encoded}`)
+    if (key) {
+      const config = getCommanderConfig(key)
+      if (config) {
+        navigate(`/?c=${config}`)
+      } else {
+        navigate('/')
+      }
     }
-  }, [encoded, navigate])
+  }, [key, navigate])
 
   return (
     <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>

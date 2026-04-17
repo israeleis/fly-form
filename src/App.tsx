@@ -51,7 +51,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<SoldierForm />} />
         <Route path="/commander" element={<CommanderSetup />} />
-        <Route path="/c/:encoded" element={<RedirectCommander />} />
+        <Route path="/c/:key" element={<RedirectCommander />} />
       </Routes>
     </HashRouter>
   )
