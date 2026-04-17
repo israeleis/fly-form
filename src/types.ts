@@ -5,6 +5,13 @@ export interface Commander {
   signatureSvg: string;
 }
 
+export interface CommanderConfig {
+  name: string;
+  rank: string;
+  personalNumber: string;
+  signatureSvg: string;
+}
+
 export interface Platoon {
   id: string;
   name: string;
@@ -32,8 +39,8 @@ export interface SoldierFormData {
   departureDate: string; // ISO date string YYYY-MM-DD
   returnDate: string;    // ISO date string YYYY-MM-DD
   flightRouteStops: string[];
-  // Platoon selection
-  platoonId: string;
+  // Commander details (from URL or manual entry)
+  commander: CommanderConfig | null;
   // PDF appearance
   penColor: PenColor;
   fontStyle: FontStyle;
