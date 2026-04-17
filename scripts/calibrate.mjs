@@ -5,6 +5,23 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { readFileSync, writeFileSync } from 'fs'
 
+function extractObjectLiteral(source, exportName, nextExportName) {
+  const pattern = new RegExp(
+    `export const ${exportName}(?::[^=]+)? = (\\{[\\s\\S]*?\\})\\n\\nexport const ${nextExportName}`,
+  )
+  const match = source.match(pattern)
+  if (!match) {
+    throw new Error(`Could not find export ${exportName} in src/lib/pdfCoords.ts`)
+  }
+  return match[1]
+}
+
+function loadCoordsFromSource() {
+  const source = readFileSync('src/lib/pdfCoords.ts', 'utf8')
+  const coordsLiteral = extractObjectLiteral(source, 'COORDS', 'SIGNATURE_BOX')
+  return Function(`"use strict"; return (${coordsLiteral});`)()
+}
+
 const templateBytes = readFileSync('public/fly_form_template.pdf')
 const pdfDoc = await PDFDocument.load(templateBytes)
 const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
@@ -111,7 +128,34 @@ for (let y = 0; y <= height; y += FINE_STEP) {
   }
 }
 
+// Draw current field boxes in red so we can see where they land
+const COORDS = loadCoordsFromSource()
+
+const BOX_COLOR = rgb(0.85, 0.1, 0.1)
+const BOX_TEXT_COLOR = rgb(0.75, 0.0, 0.0)
+
+for (const [name, box] of Object.entries(COORDS)) {
+  page.drawRectangle({
+    x: box.x,
+    y: box.y,
+    width: box.width,
+    height: box.height,
+    borderColor: BOX_COLOR,
+    borderWidth: 1,
+    opacity: 0,
+    borderOpacity: 0.8,
+  })
+  // Label the box
+  page.drawText(name, {
+    x: box.x + 1,
+    y: box.y + box.height - 6,
+    size: 4,
+    font,
+    color: BOX_TEXT_COLOR,
+  })
+}
+
 const outBytes = await pdfDoc.save()
 writeFileSync('calibration_output.pdf', outBytes)
 console.log('Written: calibration_output.pdf')
-console.log('Open it and identify the box corners for each field.')
+console.log('Red rectangles = current field boxes. Adjust coords in pdfCoords.ts to match template cells.')

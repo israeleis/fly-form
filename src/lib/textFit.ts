@@ -10,6 +10,12 @@ export type FitResult = {
   lineHeight: number
 }
 
+function calcDrawY(box: FieldBox, size: number, lineHeight: number, lineCount: number): number {
+  const totalHeight = lineCount * lineHeight
+  const topOffset = Math.max((box.height - totalHeight) / 2, 0)
+  return box.y + topOffset + totalHeight - size
+}
+
 function wordWrap(text: string, maxWidth: number, font: PDFFont, size: number): string[] {
   const words = text.split(' ')
   const lines: string[] = []
@@ -29,20 +35,43 @@ function wordWrap(text: string, maxWidth: number, font: PDFFont, size: number): 
 }
 
 function calcDrawX(line: string, box: FieldBox, font: PDFFont, size: number): number {
+  const textWidth = font.widthOfTextAtSize(line, size)
   if (box.align === 'right') {
-    return box.x + box.width - font.widthOfTextAtSize(line, size)
+    return box.x + box.width - textWidth
   }
-  return box.x
+  if (box.align === 'left') {
+    return box.x
+  }
+  return box.x + (box.width - textWidth) / 2
 }
 
 export function fitText(
   text: string,
   box: FieldBox,
   font: PDFFont,
-  maxSize = MAX_FONT_SIZE,
+  maxSize = box.maxSize ?? MAX_FONT_SIZE,
   minSize = MIN_FONT_SIZE,
 ): FitResult {
-  // Phase 1: single-line shrink
+  const maxLines = box.maxLines ?? Number.POSITIVE_INFINITY
+
+  // Phase 1: optional wrap-first mode for fields that read better on multiple lines.
+  if (box.preferWrap) {
+    for (let size = maxSize; size >= minSize; size--) {
+      const lines = wordWrap(text, box.width, font, size)
+      const lineHeight = size * 1.2
+      if (lines.length > 1 && lines.length <= maxLines && lines.length * lineHeight <= box.height) {
+        return {
+          lines,
+          size,
+          drawX: calcDrawX(lines[0], box, font, size),
+          drawY: calcDrawY(box, size, lineHeight, lines.length),
+          lineHeight,
+        }
+      }
+    }
+  }
+
+  // Phase 2: single-line shrink
   for (let size = maxSize; size >= minSize; size--) {
     if (font.widthOfTextAtSize(text, size) <= box.width) {
       const lineHeight = size * 1.2
@@ -50,36 +79,36 @@ export function fitText(
         lines: [text],
         size,
         drawX: calcDrawX(text, box, font, size),
-        drawY: box.y + box.height - size,
+        drawY: calcDrawY(box, size, lineHeight, 1),
         lineHeight,
       }
     }
   }
 
-  // Phase 2: word-wrap shrink
+  // Phase 3: word-wrap shrink
   for (let size = maxSize; size >= minSize; size--) {
     const lines = wordWrap(text, box.width, font, size)
     const lineHeight = size * 1.2
-    if (lines.length * lineHeight <= box.height) {
+    if (lines.length <= maxLines && lines.length * lineHeight <= box.height) {
       return {
         lines,
         size,
         drawX: calcDrawX(lines[0], box, font, size),
-        drawY: box.y + box.height - size,
+        drawY: calcDrawY(box, size, lineHeight, lines.length),
         lineHeight,
       }
     }
   }
 
-  // Phase 3: best effort at min size
+  // Phase 4: best effort at min size
   const size = minSize
-  const lines = wordWrap(text, box.width, font, size)
+  const lines = wordWrap(text, box.width, font, size).slice(0, maxLines)
   const lineHeight = size * 1.2
   return {
     lines,
     size,
     drawX: calcDrawX(lines[0], box, font, size),
-    drawY: box.y + box.height - size,
+    drawY: calcDrawY(box, size, lineHeight, lines.length),
     lineHeight,
   }
 }

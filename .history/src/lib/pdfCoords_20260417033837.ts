@@ -10,7 +10,7 @@ export type FieldBox = {
   y: number
   width: number
   height: number
-  align?: 'left' | 'center' | 'right'
+  align?: 'left' | 'right'
   maxSize?: number
   preferWrap?: boolean
   maxLines?: number
@@ -48,10 +48,11 @@ export const COORDS: Record<string, FieldBox> = {
 
   // Section 3 — Commander details
   // These fields sit inside the underline gaps, not on top of the printed labels.
-  commanderPersonalNumber: { x: 420, y: 330, width: 42,  height: 15, align: 'center', maxSize: 10 },
-  commanderRank:           { x: 363, y: 330, width: 30,  height: 15, align: 'center', maxSize: 10 },
-  commanderName:           { x: 268, y: 330, width: 57, height: 15, align: 'center', maxSize: 10 },
-  commanderDate:           { x: 178, y: 330, width: 60,  height: 15, align: 'center', maxSize: 10 },
+  commanderPersonalNumber: { x: 420, y: 328, width: 42,  height: 15, align: 'right', maxSize: 10 },
+  commanderRank:           { x: 363, y: 328, width: 30,  height: 15, align: 'right', maxSize: 10 },
+  commanderName:           { x: 268, y: 328, width: 57, height: 15, align: 'right', maxSize: 10 },
+  // commanderDate:           { x: 178, y: 328, width: 60,  height: 15, align: 'right', maxSize: 10 },
+  commanderDate:           { x: 40, y: 338, width: 100, height: 50, maxSize: 10 },
 }
 
-export const SIGNATURE_BOX: SignatureBox = { x: 50, y: 328, width: 130, height: 50 }
+export const SIGNATURE_BOX: SignatureBox = { x: 25, y: 348, width: 100, height: 50 }

@@ -10,7 +10,7 @@ export type FieldBox = {
   y: number
   width: number
   height: number
-  align?: 'left' | 'center' | 'right'
+  align?: 'left' | 'right'
   maxSize?: number
   preferWrap?: boolean
   maxLines?: number
@@ -25,33 +25,33 @@ export type SignatureBox = {
 
 export const COORDS: Record<string, FieldBox> = {
   // Section 1 — Row 1
-  personalNumber:   { x: 405, y: 660, width: 85, height: 32 },
-  lastName:         { x: 320, y: 660, width: 85, height: 32 },
-  firstName:        { x: 240, y: 660, width: 80, height: 32 },
+  personalNumber:   { x: 425, y: 660, width: 110, height: 32 },
+  lastName:         { x: 345, y: 660, width: 100, height: 32 },
+  firstName:        { x: 270, y: 660, width: 100, height: 32 },
   rank:             { x: 140, y: 660, width: 100, height: 32 },
   travelPurpose:    { x:  17, y: 660, width: 123, height: 32 },
 
   // Section 1 — Row 2 (contact person)
-  contactLastName:  { x: 320, y: 605, width: 85, height: 32 },
+  contactLastName:  { x: 340, y: 605, width: 100, height: 32 },
   contactFirstName: { x: 240, y: 605, width: 80, height: 32 },
   contactAddress:   { x: 140, y: 605, width: 100, height: 32, preferWrap: true, maxLines: 2 },
   contactPhone:     { x:  17, y: 605, width: 123, height: 32 },
 
   // Section 2 — Trip details
-  destinationCountry: { x: 422, y: 512, width: 70, height: 32 },
-  departureDate:      { x: 306, y: 512, width: 116, height: 32 },
-  returnDate:         { x: 206, y: 512, width: 100, height: 32 },
-  stayDays:           { x: 113, y: 512, width: 93, height: 32 },
+  destinationCountry: { x: 435, y: 516, width: 110, height: 32 },
+  departureDate:      { x: 330, y: 516, width: 105, height: 32 },
+  returnDate:         { x: 228, y: 516, width: 105, height: 32 },
+  stayDays:           { x: 105, y: 516, width: 100, height: 32 },
 
   // Section 2b — Flight route (right-aligned, supports multiline)
-  flightRoute: { x: 90, y: 418, width: 420, height: 35, align: 'right', maxLines: 2 },
+  flightRoute: { x: 65, y: 406, width: 450, height: 62, align: 'right', maxLines: 2 },
 
   // Section 3 — Commander details
   // These fields sit inside the underline gaps, not on top of the printed labels.
-  commanderPersonalNumber: { x: 420, y: 330, width: 42,  height: 15, align: 'center', maxSize: 10 },
-  commanderRank:           { x: 363, y: 330, width: 30,  height: 15, align: 'center', maxSize: 10 },
-  commanderName:           { x: 268, y: 330, width: 57, height: 15, align: 'center', maxSize: 10 },
-  commanderDate:           { x: 178, y: 330, width: 60,  height: 15, align: 'center', maxSize: 10 },
+  commanderPersonalNumber: { x: 385, y: 318, width: 72,  height: 18, align: 'right', maxSize: 10 },
+  commanderRank:           { x: 328, y: 318, width: 58,  height: 18, align: 'right', maxSize: 10 },
+  commanderName:           { x: 210, y: 318, width: 118, height: 18, align: 'right', maxSize: 10 },
+  commanderDate:           { x: 145, y: 318, width: 85,  height: 18, align: 'right', maxSize: 10 },
 }
 
-export const SIGNATURE_BOX: SignatureBox = { x: 50, y: 328, width: 130, height: 50 }
+export const SIGNATURE_BOX: SignatureBox = { x: 25, y: 295, width: 100, height: 50 }

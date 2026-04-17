@@ -10,7 +10,7 @@ export type FieldBox = {
   y: number
   width: number
   height: number
-  align?: 'left' | 'center' | 'right'
+  align?: 'left' | 'right'
   maxSize?: number
   preferWrap?: boolean
   maxLines?: number
@@ -44,14 +44,14 @@ export const COORDS: Record<string, FieldBox> = {
   stayDays:           { x: 113, y: 512, width: 93, height: 32 },
 
   // Section 2b — Flight route (right-aligned, supports multiline)
-  flightRoute: { x: 90, y: 418, width: 420, height: 35, align: 'right', maxLines: 2 },
+  flightRoute: { x: 85, y: 418, width: 450, height: 35, align: 'right', maxLines: 2 },
 
   // Section 3 — Commander details
   // These fields sit inside the underline gaps, not on top of the printed labels.
-  commanderPersonalNumber: { x: 420, y: 330, width: 42,  height: 15, align: 'center', maxSize: 10 },
-  commanderRank:           { x: 363, y: 330, width: 30,  height: 15, align: 'center', maxSize: 10 },
-  commanderName:           { x: 268, y: 330, width: 57, height: 15, align: 'center', maxSize: 10 },
-  commanderDate:           { x: 178, y: 330, width: 60,  height: 15, align: 'center', maxSize: 10 },
+  commanderPersonalNumber: { x: 385, y: 318, width: 72,  height: 18, align: 'right', maxSize: 10 },
+  commanderRank:           { x: 328, y: 318, width: 58,  height: 18, align: 'right', maxSize: 10 },
+  commanderName:           { x: 210, y: 318, width: 118, height: 18, align: 'right', maxSize: 10 },
+  commanderDate:           { x: 145, y: 318, width: 85,  height: 18, align: 'right', maxSize: 10 },
 }
 
-export const SIGNATURE_BOX: SignatureBox = { x: 50, y: 328, width: 130, height: 50 }
+export const SIGNATURE_BOX: SignatureBox = { x: 25, y: 295, width: 100, height: 50 }
