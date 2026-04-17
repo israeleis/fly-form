@@ -4,7 +4,7 @@ import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
 import { SoldierFormData, PenColor } from '../types'
-import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
+import { getFontStyleOption } from '../lib/fontStyles'
 
 const IDF_RANKS: { value: string; label: string }[] = [
   { value: 'טור\'',  label: 'טור\' — טוראי' },
