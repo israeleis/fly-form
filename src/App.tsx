@@ -6,6 +6,10 @@ function NavBar() {
   const [searchParams] = useSearchParams()
   const hasCommanderParam = searchParams.has('c')
 
+  if (hasCommanderParam) {
+    return null
+  }
+
   return (
     <nav style={{
       background: '#1e40af',
@@ -25,18 +29,16 @@ function NavBar() {
       >
         טופס חייל
       </NavLink>
-      {!hasCommanderParam && (
-        <NavLink
-          to="/commander"
-          style={({ isActive }) => ({
-            color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-          })}
-        >
-          הגדרת מפקד
-        </NavLink>
-      )}
+      <NavLink
+        to="/commander"
+        style={({ isActive }) => ({
+          color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
+          textDecoration: 'none',
+          fontSize: '0.9rem',
+        })}
+      >
+        הגדרת מפקד
+      </NavLink>
     </nav>
   )
 }
