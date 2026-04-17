@@ -8,7 +8,8 @@ describe('fontStyles', () => {
       'alef',
       'david-libre',
       'amatic-sc',
-      'solitreo',
+      'caveat',
+      'fredoka-one',
     ])
     expect(FONT_STYLE_OPTIONS.filter((option) => option.badge === 'כתב יד')).toHaveLength(2)
   })

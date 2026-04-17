@@ -48,13 +48,22 @@ export const FONT_STYLE_OPTIONS: FontStyleOption[] = [
     assetPath: 'fonts/AmaticSC-Regular.ttf',
   },
   {
-    value: 'solitreo',
-    label: 'Solitreo',
+    value: 'caveat',
+    label: 'Caveat',
     badge: 'כתב יד',
-    description: 'כתב יד זורם וחם עם אופי אישי.',
+    description: 'כתב יד אלגנטי וזורם עם אופי אישי.',
     previewText: 'אבגדהוז חטיכלמ 123',
-    cssFamily: "'Solitreo', 'Rubik Local', cursive",
-    assetPath: 'fonts/Solitreo-Regular.ttf',
+    cssFamily: "'Caveat', 'Rubik Local', cursive",
+    assetPath: 'fonts/Caveat-Regular.ttf',
+  },
+  {
+    value: 'fredoka-one',
+    label: 'Fredoka One',
+    badge: 'עגול',
+    description: 'כתב עגול וחם עם אופי מחופש.',
+    previewText: 'אבגדהוז חטיכלמ 123',
+    cssFamily: "'Fredoka One', 'Rubik Local', cursive",
+    assetPath: 'fonts/FredokaOne-Regular.ttf',
   },
 ]
 

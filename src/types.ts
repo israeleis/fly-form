@@ -21,7 +21,7 @@ export interface Platoon {
 }
 
 export type PenColor = 'black' | 'dark-blue' | 'blue'
-export type FontStyle = 'rubik' | 'alef' | 'david-libre' | 'amatic-sc' | 'solitreo'
+export type FontStyle = 'rubik' | 'alef' | 'david-libre' | 'amatic-sc' | 'caveat' | 'fredoka-one'
 
 export interface SoldierFormData {
   // Section 1
