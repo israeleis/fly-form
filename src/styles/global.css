@@ -396,6 +396,60 @@ button[type="submit"]:disabled {
   margin-top: 0.25rem;
 }
 
+/* ── File attachments ── */
+.attachments-hint {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.attachment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  background: #f9fafb;
+}
+
+.attachment-name {
+  flex: 1;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-add-attachment {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border: 1.5px dashed #2563eb;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 0.25rem;
+  min-height: 44px;
+}
+
+.btn-add-attachment:hover {
+  background: #dbeafe;
+}
+
 /* ── Nav ── */
 nav {
   display: flex;

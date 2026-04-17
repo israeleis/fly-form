@@ -67,6 +67,8 @@ export function SoldierForm() {
   const [error, setError] = useState('')
   const [searchParams] = useSearchParams()
   const [urlWarning, setUrlWarning] = useState('')
+  const [attachments, setAttachments] = useState<File[]>([])
+  const [attachmentError, setAttachmentError] = useState('')
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
@@ -119,6 +121,44 @@ export function SoldierForm() {
     update('flightRouteStops', stops.length > 0 ? stops : [''])
   }
 
+  function handleFileAdd(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setAttachmentError('')
+
+    // Check file type
+    if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
+      setAttachmentError('סוג קובץ לא נתמך. השתמש בתמונות JPG/PNG או קובץ PDF.')
+      e.target.value = ''
+      return
+    }
+
+    // Check if already at max
+    if (attachments.length >= 3) {
+      setAttachmentError('מותר לצרף עד 3 קבצים בלבד.')
+      e.target.value = ''
+      return
+    }
+
+    // Dedup by name and size
+    const isDuplicate = attachments.some(
+      (f) => f.name === file.name && f.size === file.size
+    )
+    if (isDuplicate) {
+      setAttachmentError('קובץ זה כבר מצורף.')
+      e.target.value = ''
+      return
+    }
+
+    setAttachments((prev) => [...prev, file])
+    e.target.value = ''
+  }
+
+  function handleFileRemove(index: number) {
+    setAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
   function handleReset() {
     if (confirm('לאפס את כל השדות?')) {
       localStorage.removeItem(STORAGE_KEY)
@@ -133,7 +173,7 @@ export function SoldierForm() {
 
     setLoading(true)
     try {
-      const pdfBytes = await fillPdf(form)
+      const pdfBytes = await fillPdf(form, attachments)
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -376,6 +416,37 @@ export function SoldierForm() {
               </label>
             ))}
           </div>
+        </div>
+
+        <h2>קבצים מצורפים (אופציונלי)</h2>
+        <div className="field">
+          <p className="attachments-hint">עד 3 קבצים (תמונה JPG/PNG או PDF) — יתווספו כעמודים נוספים</p>
+          {attachments.length > 0 && (
+            <ul className="attachment-list">
+              {attachments.map((file, i) => (
+                <li key={i} className="attachment-item">
+                  <span className="attachment-name" dir="ltr">{file.name}</span>
+                  <button type="button" className="btn-remove" onClick={() => handleFileRemove(i)}
+                    aria-label={`הסר ${file.name}`}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {attachments.length < 3 && (
+            <label className="btn-add-attachment">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              הוסף קובץ
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf"
+                style={{ display: 'none' }} onChange={handleFileAdd} />
+            </label>
+          )}
+          {attachmentError && <p className="error" role="alert">{attachmentError}</p>}
         </div>
 
         {urlWarning && <p style={{ color: '#d97706', fontSize: '0.9rem', marginBottom: '1rem' }}>{urlWarning}</p>}

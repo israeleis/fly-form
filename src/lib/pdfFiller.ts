@@ -7,6 +7,7 @@ import { COORDS, SIGNATURE_BOX } from './pdfCoords'
 import { fitText } from './textFit'
 import { getFontStyleOption } from './fontStyles'
 import { formatContactAddressForPdf, formatPdfTextForBidi } from './bidi'
+import { appendAttachments } from './attachmentProcessor'
 
 function formatDate(iso: string): string {
   if (!iso) return ''
@@ -29,7 +30,8 @@ function penColorToRgb(penColor: SoldierFormData['penColor']): Color {
 }
 
 export async function fillPdf(
-  formData: SoldierFormData
+  formData: SoldierFormData,
+  attachments: File[] = []
 ): Promise<Uint8Array> {
   // Load template
   const templateUrl = import.meta.env.BASE_URL + 'fly_form_template.pdf'
@@ -110,6 +112,11 @@ export async function fillPdf(
   const sigImage = await pdfDoc.embedPng(sigPng)
   const { x, y, width, height } = SIGNATURE_BOX
   page.drawImage(sigImage, { x, y, width, height })
+
+  // Append any attached files as additional pages
+  if (attachments.length > 0) {
+    await appendAttachments(pdfDoc, attachments)
+  }
 
   return pdfDoc.save()
 }
