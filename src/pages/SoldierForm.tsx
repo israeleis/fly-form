@@ -70,6 +70,7 @@ export function SoldierForm() {
   const [attachments, setAttachments] = useState<File[]>([])
   const [attachmentError, setAttachmentError] = useState('')
   const [downloadSuccess, setDownloadSuccess] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
@@ -183,8 +184,8 @@ export function SoldierForm() {
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
       if (isMobile) {
-        // On mobile, open PDF in new tab
-        window.open(url, '_blank')
+        // On mobile, show PDF viewer inline
+        setPdfUrl(url)
       } else {
         // On desktop, download the file
         const a = document.createElement('a')
@@ -418,6 +419,71 @@ export function SoldierForm() {
       {form.commander && (
         <div style={{ textAlign: 'center', marginTop: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
           מפקד: <strong>{form.commander.name}</strong>
+        </div>
+      )}
+
+      {pdfUrl && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            background: 'white',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            margin: '1rem',
+            borderRadius: '0.5rem',
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '1rem', background: '#f3f4f6', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.1rem' }}>הטופס שלך</h2>
+              <button
+                onClick={() => setPdfUrl(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={pdfUrl}
+              style={{
+                flex: 1,
+                border: 'none',
+                width: '100%',
+              }}
+              title="PDF Viewer"
+            />
+            <div style={{ padding: '1rem', background: '#f3f4f6', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              <a
+                href={pdfUrl}
+                download={`היתר-יציאה-${form.lastName}-${form.firstName}.pdf`}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#3b82f6',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                הורד קובץ
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </div>
