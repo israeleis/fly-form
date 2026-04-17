@@ -375,33 +375,6 @@ export function SoldierForm() {
           </div>
         )}
 
-        <h2>סגנון כתיבה בטופס</h2>
-        <div className="field">
-          <label>בחר פונט</label>
-          <div className="font-style-grid" role="radiogroup" aria-label="בחירת פונט לטופס">
-            {FONT_STYLE_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className={`font-style-option${form.fontStyle === option.value ? ' selected' : ''}`}
-                style={{ ['--font-preview-family' as string]: option.cssFamily } as CSSProperties}
-              >
-                <input
-                  type="radio"
-                  name="fontStyle"
-                  value={option.value}
-                  checked={form.fontStyle === option.value}
-                  onChange={() => update('fontStyle', option.value)}
-                />
-                <span className="font-style-header">
-                  <span className="font-style-name">{option.label}</span>
-                  <span className="font-style-badge">{option.badge}</span>
-                </span>
-                <span className="font-style-preview">{option.previewText}</span>
-                <span className="font-style-description">{option.description}</span>
-              </label>
-            ))}
-          </div>
-        </div>
 
         <div className="field">
           <label>בחר צבע עט</label>
