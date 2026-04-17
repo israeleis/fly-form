@@ -178,13 +178,23 @@ export function SoldierForm() {
       const pdfBytes = await fillPdf(form, attachments)
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `היתר-יציאה-${form.lastName}-${form.firstName}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+
+      // Check if mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+      if (isMobile) {
+        // On mobile, open PDF in new tab
+        window.open(url, '_blank')
+      } else {
+        // On desktop, download the file
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `היתר-יציאה-${form.lastName}-${form.firstName}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      }
+
       setDownloadSuccess(true)
       setTimeout(() => setDownloadSuccess(false), 4000)
     } catch (err) {
