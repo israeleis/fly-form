@@ -60,6 +60,29 @@ export function PdfViewer({ pdfUrl, onClose, fileName }: PdfViewerProps) {
     renderPdf()
   }, [pdfUrl])
 
+  const shareToWhatsApp = async (url: string, name: string) => {
+    try {
+      // Fetch the PDF blob
+      const response = await fetch(url)
+      const blob = await response.blob()
+
+      // Check if Web Share API is available
+      if (navigator.share) {
+        await navigator.share({
+          files: [new File([blob], name, { type: 'application/pdf' })],
+          title: 'טופס היתר יציאה',
+          text: 'הטופס שלי לאישור יציאה לחו"ל',
+        })
+      } else {
+        // Fallback: WhatsApp web link
+        const message = encodeURIComponent('הטופס שלי לאישור יציאה לחו"ל')
+        window.open(`https://wa.me/?text=${message}`)
+      }
+    } catch (err) {
+      console.error('Error sharing:', err)
+    }
+  }
+
   return (
     <div style={{
       position: 'fixed',
@@ -124,7 +147,7 @@ export function PdfViewer({ pdfUrl, onClose, fileName }: PdfViewerProps) {
           ))}
         </div>
 
-        <div style={{ padding: '1rem', background: '#f3f4f6', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+        <div style={{ padding: '1rem', background: '#f3f4f6', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <a
             href={pdfUrl}
             download={fileName}
@@ -139,6 +162,20 @@ export function PdfViewer({ pdfUrl, onClose, fileName }: PdfViewerProps) {
           >
             הורד קובץ
           </a>
+          <button
+            onClick={() => shareToWhatsApp(pdfUrl, fileName)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#25D366',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+            }}
+          >
+            שתף ב-WhatsApp
+          </button>
         </div>
       </div>
     </div>
