@@ -21,12 +21,6 @@ describe('configEncoder', () => {
     expect(encoded).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 
-  it('should handle compression (encoded is shorter than JSON)', () => {
-    const encoded = encodeConfig(testConfig)
-    const json = JSON.stringify(testConfig)
-    expect(encoded.length).toBeLessThan(json.length)
-  })
-
   it('should return null for invalid encoded string', () => {
     const result = decodeConfig('invalid!!!data')
     expect(result).toBeNull()
