@@ -83,7 +83,12 @@ export function SoldierForm() {
     if (encodedCommander) {
       const decoded = decodeConfig(encodedCommander)
       if (decoded) {
-        setForm((prev) => ({ ...prev, commander: decoded }))
+        setForm((prev) => ({
+          ...prev,
+          commander: decoded,
+          penColor: decoded.penColor,
+          fontStyle: decoded.fontStyle,
+        }))
       } else {
         setUrlWarning('לא הצליח לטעון את פרטי המפקד מהקישור. יאפשר לך למלא ידנית.')
       }

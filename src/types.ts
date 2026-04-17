@@ -10,6 +10,8 @@ export interface CommanderConfig {
   rank: string;
   personalNumber: string;
   signatureSvg: string;
+  penColor: PenColor;
+  fontStyle: FontStyle;
 }
 
 export interface Platoon {

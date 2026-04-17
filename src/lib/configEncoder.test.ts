@@ -8,6 +8,8 @@ describe('configEncoder', () => {
     rank: 'סגן',
     personalNumber: '1234567',
     signatureSvg: '<svg>test</svg>',
+    penColor: 'black',
+    fontStyle: 'rubik',
   }
 
   it('should encode and decode config without data loss', () => {

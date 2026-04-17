@@ -1,28 +1,35 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { SignaturePad } from '../components/SignaturePad'
 import { encodeConfig } from '../lib/configEncoder'
-
-const ADMIN_WHATSAPP = 'YOUR_WHATSAPP_NUMBER'
+import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
+import type { PenColor, FontStyle } from '../types'
 
 interface CommanderData {
   name: string
   rank: string
   personalNumber: string
-  platoonName: string
   signatureSvg: string
+  penColor: PenColor
+  fontStyle: FontStyle
 }
+
+const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
+  { value: 'black',     label: 'שחור',    hex: '#171717' },
+  { value: 'dark-blue', label: 'כחול כהה', hex: '#0d1b6b' },
+  { value: 'blue',      label: 'כחול',    hex: '#1a60d1' },
+]
 
 const EMPTY: CommanderData = {
   name: '',
   rank: '',
   personalNumber: '',
-  platoonName: '',
   signatureSvg: '',
+  penColor: 'black',
+  fontStyle: 'rubik',
 }
 
 export function CommanderSetup() {
   const [form, setForm] = useState<CommanderData>(EMPTY)
-  const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [copiedLink, setCopiedLink] = useState(false)
 
@@ -30,31 +37,8 @@ export function CommanderSetup() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    if (!form.signatureSvg) {
-      setError('יש לצייר ולשמור חתימה לפני השליחה')
-      return
-    }
-
-    const payload = {
-      id: `platoon-${Date.now()}`,
-      name: form.platoonName,
-      commander: {
-        name: form.name,
-        rank: form.rank,
-        personalNumber: form.personalNumber,
-        signatureSvg: form.signatureSvg,
-      },
-    }
-
-    const text = encodeURIComponent(JSON.stringify(payload, null, 2))
-    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${text}`, '_blank')
-    setSent(true)
-  }
-
   function handleGenerateLink() {
+    setError('')
     if (!form.signatureSvg) {
       setError('יש לצייר ולשמור חתימה לפני יצירת קישור')
       return
@@ -65,6 +49,8 @@ export function CommanderSetup() {
       rank: form.rank,
       personalNumber: form.personalNumber,
       signatureSvg: form.signatureSvg,
+      penColor: form.penColor,
+      fontStyle: form.fontStyle,
     }
 
     const encoded = encodeConfig(config)
@@ -80,22 +66,18 @@ export function CommanderSetup() {
     })
   }
 
-  if (sent) {
-    return (
-      <div className="page">
-        <h1>WhatsApp נפתח</h1>
-        <p>אשר את שליחת ההודעה ב-WhatsApp כדי להעביר את הפרטים לאחראי המערכת.</p>
-      </div>
-    )
-  }
+  const selectedFont = getFontStyleOption(form.fontStyle)
+  const formStyle = {
+    ['--selected-form-font' as string]: selectedFont.cssFamily,
+  } as CSSProperties
 
   return (
     <div className="page">
       <h1>הגדרת מפקד</h1>
       <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-        מלא את הפרטים וחתום. הנתונים יישלחו לאחראי המערכת דרך WhatsApp.
+        מלא את הפרטים, בחר סגנון, וחתום. הנתונים יישמרו בקישור משותף.
       </p>
-      <form onSubmit={handleSubmit}>
+      <form style={formStyle}>
         <div className="form-row">
           <div className="field">
             <label>שם מלא</label>
@@ -111,9 +93,48 @@ export function CommanderSetup() {
             <label>מספר אישי</label>
             <input value={form.personalNumber} onChange={(e) => update('personalNumber', e.target.value)} required />
           </div>
-          <div className="field">
-            <label>שם פלוגה</label>
-            <input value={form.platoonName} onChange={(e) => update('platoonName', e.target.value)} required />
+        </div>
+
+        <h2>סגנון כתיבה</h2>
+        <div className="field">
+          <label>בחר פונט</label>
+          <div className="font-style-grid" role="radiogroup" aria-label="בחירת פונט">
+            {FONT_STYLE_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className={`font-style-option${form.fontStyle === option.value ? ' selected' : ''}`}
+                style={{ ['--font-preview-family' as string]: option.cssFamily } as CSSProperties}
+              >
+                <input
+                  type="radio"
+                  name="fontStyle"
+                  value={option.value}
+                  checked={form.fontStyle === option.value}
+                  onChange={() => update('fontStyle', option.value)}
+                />
+                <span className="font-style-header">
+                  <span className="font-style-name">{option.label}</span>
+                  <span className="font-style-badge">{option.badge}</span>
+                </span>
+                <span className="font-style-preview">{option.previewText}</span>
+                <span className="font-style-description">{option.description}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <label>בחר צבע עט</label>
+          <div className="pen-color-row">
+            {PEN_COLORS.map(({ value, label, hex }) => (
+              <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
+                <input type="radio" name="penColor" value={value}
+                  checked={form.penColor === value}
+                  onChange={() => update('penColor', value)} />
+                <span className="pen-swatch" style={{ background: hex }} />
+                {label}
+              </label>
+            ))}
           </div>
         </div>
 
@@ -127,7 +148,7 @@ export function CommanderSetup() {
           <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem' }}>
             <h3 style={{ margin: '0 0 0.5rem 0' }}>שתף קישור עם חיילים</h3>
             <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 0.75rem 0' }}>
-              חיילים יוכלו לפתוח את הקישור וההפרטים שלך יתמלאו אוטומטית
+              חיילים יוכלו לפתוח את הקישור וההפרטים שלך יתמלאו אוטומטית עם הסגנון שבחרת
             </p>
             <button type="button" onClick={handleGenerateLink} style={{ background: '#10b981' }}>
               {copiedLink ? '✓ הועתק' : 'צור קישור משותף'}
@@ -136,7 +157,6 @@ export function CommanderSetup() {
         )}
 
         {error && <p className="error">{error}</p>}
-        <button type="submit">שלח דרך WhatsApp</button>
       </form>
     </div>
   )

@@ -27,6 +27,7 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
     const parsed = JSON.parse(json) as unknown
 
     // Validate all required fields exist
+    const p = parsed as Record<string, unknown>
     if (
       typeof parsed === 'object' &&
       parsed !== null &&
@@ -34,10 +35,16 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
       'rank' in parsed &&
       'personalNumber' in parsed &&
       'signatureSvg' in parsed &&
-      typeof (parsed as Record<string, unknown>).name === 'string' &&
-      typeof (parsed as Record<string, unknown>).rank === 'string' &&
-      typeof (parsed as Record<string, unknown>).personalNumber === 'string' &&
-      typeof (parsed as Record<string, unknown>).signatureSvg === 'string'
+      'penColor' in parsed &&
+      'fontStyle' in parsed &&
+      typeof p.name === 'string' &&
+      typeof p.rank === 'string' &&
+      typeof p.personalNumber === 'string' &&
+      typeof p.signatureSvg === 'string' &&
+      typeof p.penColor === 'string' &&
+      typeof p.fontStyle === 'string' &&
+      ['black', 'dark-blue', 'blue'].includes(p.penColor) &&
+      ['rubik', 'alef', 'david-libre', 'amatic-sc', 'solitreo'].includes(p.fontStyle)
     ) {
       return parsed as CommanderConfig
     }
