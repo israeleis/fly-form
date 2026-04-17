@@ -69,6 +69,7 @@ export function SoldierForm() {
   const [urlWarning, setUrlWarning] = useState('')
   const [attachments, setAttachments] = useState<File[]>([])
   const [attachmentError, setAttachmentError] = useState('')
+  const [downloadSuccess, setDownloadSuccess] = useState(false)
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
@@ -184,6 +185,8 @@ export function SoldierForm() {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+      setDownloadSuccess(true)
+      setTimeout(() => setDownloadSuccess(false), 4000)
     } catch (err) {
       setError('אירעה שגיאה ביצירת הטופס. נסה שנית.')
       console.error(err)
@@ -392,6 +395,11 @@ export function SoldierForm() {
 
         {urlWarning && <p style={{ color: '#d97706', fontSize: '0.9rem', marginBottom: '1rem' }}>{urlWarning}</p>}
         {error && <p className="error" role="alert">{error}</p>}
+        {downloadSuccess && (
+          <p style={{ color: '#059669', fontSize: '0.95rem', marginBottom: '1rem', padding: '0.75rem', background: '#d1fae5', borderRadius: '0.5rem' }}>
+            ✓ הטופס הורד בהצלחה
+          </p>
+        )}
         <button type="submit" disabled={loading}>
           {loading ? 'מייצר טופס...' : 'הורד טופס ממולא'}
         </button>
