@@ -5,6 +5,7 @@ import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
 import { SoldierFormData, PenColor } from '../types'
 import { getFontStyleOption } from '../lib/fontStyles'
+import { PdfViewer } from '../components/PdfViewer'
 
 const IDF_RANKS: { value: string; label: string }[] = [
   { value: 'טור\'',  label: 'טור\' — טוראי' },
@@ -423,68 +424,11 @@ export function SoldierForm() {
       )}
 
       {pdfUrl && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 9999,
-        }}>
-          <div style={{
-            background: 'white',
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            margin: '1rem',
-            borderRadius: '0.5rem',
-            overflow: 'hidden',
-          }}>
-            <div style={{ padding: '1rem', background: '#f3f4f6', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '1.1rem' }}>הטופס שלך</h2>
-              <button
-                onClick={() => setPdfUrl(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                }}
-              >
-                ✕
-              </button>
-            </div>
-            <iframe
-              src={pdfUrl}
-              style={{
-                flex: 1,
-                border: 'none',
-                width: '100%',
-              }}
-              title="PDF Viewer"
-            />
-            <div style={{ padding: '1rem', background: '#f3f4f6', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-              <a
-                href={pdfUrl}
-                download={`היתר-יציאה-${form.lastName}-${form.firstName}.pdf`}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: '#3b82f6',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.9rem',
-                }}
-              >
-                הורד קובץ
-              </a>
-            </div>
-          </div>
-        </div>
+        <PdfViewer
+          pdfUrl={pdfUrl}
+          onClose={() => setPdfUrl(null)}
+          fileName={`היתר-יציאה-${form.lastName}-${form.firstName}.pdf`}
+        />
       )}
     </div>
   )
