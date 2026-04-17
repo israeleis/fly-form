@@ -10,35 +10,47 @@ interface PdfViewerProps {
 }
 
 export function PdfViewer({ pdfUrl, onClose, fileName }: PdfViewerProps) {
-  const [pages, setPages] = useState<HTMLCanvasElement[]>([])
+  const [pageImages, setPageImages] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const renderPdf = async () => {
       try {
         const pdf = await pdfjsLib.getDocument(pdfUrl).promise
-        const canvases: HTMLCanvasElement[] = []
+        const images: string[] = []
 
         for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
-          const page = await pdf.getPage(i)
-          const canvas = document.createElement('canvas')
-          const context = canvas.getContext('2d')!
-          const viewport = page.getViewport({ scale: 1.5 })
+          try {
+            const page = await pdf.getPage(i)
+            const canvas = document.createElement('canvas')
+            const context = canvas.getContext('2d')
+            if (!context) throw new Error('Could not get canvas context')
 
-          canvas.width = viewport.width
-          canvas.height = viewport.height
+            const viewport = page.getViewport({ scale: 2 })
+            canvas.width = viewport.width
+            canvas.height = viewport.height
 
-          await page.render({
-            canvasContext: context,
-            viewport: viewport,
-          } as any).promise
+            await page.render({
+              canvasContext: context,
+              viewport: viewport,
+            } as any).promise
 
-          canvases.push(canvas)
+            const imageData = canvas.toDataURL('image/png')
+            images.push(imageData)
+          } catch (pageErr) {
+            console.error(`Error rendering page ${i}:`, pageErr)
+          }
         }
 
-        setPages(canvases)
+        if (images.length === 0) {
+          setError('לא הצלח לטעון את הטופס')
+        } else {
+          setPageImages(images)
+        }
       } catch (err) {
-        console.error('Error rendering PDF:', err)
+        console.error('Error loading PDF:', err)
+        setError('שגיאה בטעינת הטופס: ' + String(err))
       } finally {
         setLoading(false)
       }
@@ -95,15 +107,18 @@ export function PdfViewer({ pdfUrl, onClose, fileName }: PdfViewerProps) {
           gap: '1rem',
         }}>
           {loading && <p style={{ color: '#6b7280' }}>טוען PDF...</p>}
-          {pages.map((canvas, i) => (
-            <div
+          {error && <p style={{ color: '#dc2626' }}>{error}</p>}
+          {pageImages.map((imageSrc, i) => (
+            <img
               key={i}
-              ref={(el) => {
-                if (el && el.children.length === 0) {
-                  el.appendChild(canvas)
-                }
+              src={imageSrc}
+              style={{
+                maxWidth: '100%',
+                borderRadius: '0.5rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                background: 'white',
               }}
-              style={{ background: 'white', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+              alt={`Page ${i + 1}`}
             />
           ))}
         </div>
