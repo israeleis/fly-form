@@ -53,7 +53,9 @@ export async function fillPdf(
   function drawFitted(text: string, fieldName: keyof typeof COORDS) {
     if (!text) return
     const box = COORDS[fieldName]
-    const printableText = formatPdfTextForBidi(text)
+    // Skip bidi processing for numeric-only fields
+    const isNumericOnly = /^[0-9\-+/.:]+$/.test(text)
+    const printableText = isNumericOnly ? text : formatPdfTextForBidi(text)
     const { lines, size, drawX, drawY, lineHeight } = fitText(printableText, box, selectedFont)
     lines.forEach((line, i) => {
       const textWidth = selectedFont.widthOfTextAtSize(line, size)
