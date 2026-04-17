@@ -55,7 +55,7 @@ export function CommanderSetup() {
 
     const encoded = encodeConfig(config)
     const baseUrl = window.location.origin + window.location.pathname
-    const shareUrl = `${baseUrl}#/?commander=${encoded}`
+    const shareUrl = `${baseUrl}#/?c=${encoded}`
 
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {

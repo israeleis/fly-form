@@ -81,7 +81,7 @@ export function SoldierForm() {
 
   // Parse commander from URL on mount
   useEffect(() => {
-    const encodedCommander = searchParams.get('commander')
+    const encodedCommander = searchParams.get('c')
     if (encodedCommander) {
       const decoded = decodeConfig(encodedCommander)
       if (decoded) {
