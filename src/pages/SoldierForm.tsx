@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, type CSSProperties } from 'react'
-import { PlatoonSelect } from '../components/PlatoonSelect'
+import { useSearchParams } from 'react-router-dom'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
-import { SoldierFormData, Platoon, PenColor } from '../types'
+import { decodeConfig } from '../lib/configEncoder'
+import { SoldierFormData, PenColor } from '../types'
 import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
-import platoons from '../config/platoons.json'
 
 const IDF_RANKS: { value: string; label: string }[] = [
   { value: 'טור\'',  label: 'טור\' — טוראי' },
@@ -48,7 +48,7 @@ const EMPTY: SoldierFormData = {
   departureDate: '',
   returnDate: '',
   flightRouteStops: ['', ''],
-  platoonId: '',
+  commander: null,
   penColor: 'black',
   fontStyle: 'rubik',
 }
@@ -65,6 +65,8 @@ export function SoldierForm() {
   const [form, setForm] = useState<SoldierFormData>(loadSaved)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [searchParams] = useSearchParams()
+  const [urlWarning, setUrlWarning] = useState('')
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
@@ -74,6 +76,19 @@ export function SoldierForm() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
   }, [form])
+
+  // Parse commander from URL on mount
+  useEffect(() => {
+    const encodedCommander = searchParams.get('commander')
+    if (encodedCommander) {
+      const decoded = decodeConfig(encodedCommander)
+      if (decoded) {
+        setForm((prev) => ({ ...prev, commander: decoded }))
+      } else {
+        setUrlWarning('לא הצליח לטעון את פרטי המפקד מהקישור. יאפשר לך למלא ידנית.')
+      }
+    }
+  }, [searchParams])
 
   const stayDays = useMemo(
     () => calcDays(form.departureDate, form.returnDate),
@@ -109,12 +124,11 @@ export function SoldierForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    const platoon = (platoons as Platoon[]).find((p) => p.id === form.platoonId)
-    if (!platoon) { setError('יש לבחור פלוגה'); return }
+    if (!form.commander) { setError('יש לבחור מפקד'); return }
 
     setLoading(true)
     try {
-      const pdfBytes = await fillPdf(form, platoon)
+      const pdfBytes = await fillPdf(form)
       const blob = new Blob([pdfBytes], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -145,6 +159,40 @@ export function SoldierForm() {
         </button>
       </div>
       <form onSubmit={handleSubmit} style={formStyle}>
+
+        {form.commander && (
+          <div style={{
+            padding: '1rem',
+            background: '#f3f4f6',
+            borderRadius: '0.5rem',
+            marginBottom: '1.5rem',
+            borderLeft: '4px solid #3b82f6'
+          }}>
+            <h2 style={{ margin: '0 0 1rem 0', color: '#1f2937' }}>פרטי המפקד</h2>
+            <div className="form-row">
+              <div className="field">
+                <label>שם מלא</label>
+                <input value={form.commander.name} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
+              </div>
+              <div className="field">
+                <label>דרגה</label>
+                <input value={form.commander.rank} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="field">
+                <label>מספר אישי</label>
+                <input value={form.commander.personalNumber} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
+              </div>
+            </div>
+            <div className="field">
+              <label>חתימה</label>
+              <div style={{ padding: '0.75rem', background: 'white', borderRadius: '0.25rem', border: '1px solid #d1d5db' }}>
+                <div dangerouslySetInnerHTML={{ __html: form.commander.signatureSvg }} />
+              </div>
+            </div>
+          </div>
+        )}
 
         <h2>1. פרטי משרת המילואים</h2>
 
@@ -274,10 +322,13 @@ export function SoldierForm() {
           </div>
         </div>
 
-        <h2>פלוגה</h2>
-        <div className="field">
-          <PlatoonSelect value={form.platoonId} onChange={(id) => update('platoonId', id)} />
-        </div>
+        {!form.commander && (
+          <div className="field" style={{ padding: '1rem', background: '#fef3c7', borderRadius: '0.5rem' }}>
+            <p style={{ color: '#78350f', fontSize: '0.9rem', margin: 0 }}>
+              💡 קיבלת קישור מפקד? פתח אותו כדי שהפרטים יתמלאו אוטומטית.
+            </p>
+          </div>
+        )}
 
         <h2>סגנון כתיבה בטופס</h2>
         <div className="field">
@@ -322,6 +373,7 @@ export function SoldierForm() {
           </div>
         </div>
 
+        {urlWarning && <p style={{ color: '#d97706', fontSize: '0.9rem', marginBottom: '1rem' }}>{urlWarning}</p>}
         {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" disabled={loading}>
           {loading ? 'מייצר טופס...' : 'הורד טופס ממולא'}

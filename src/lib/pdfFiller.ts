@@ -1,11 +1,12 @@
 import { PDFDocument, rgb, Color } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
-import { SoldierFormData, Platoon } from '../types'
+import { SoldierFormData } from '../types'
 import { calcDays } from './calcDays'
 import { svgToPng } from './svgToPng'
 import { COORDS, SIGNATURE_BOX } from './pdfCoords'
 import { fitText } from './textFit'
 import { getFontStyleOption } from './fontStyles'
+import { formatContactAddressForPdf, formatPdfTextForBidi } from './bidi'
 
 function formatDate(iso: string): string {
   if (!iso) return ''
@@ -28,8 +29,7 @@ function penColorToRgb(penColor: SoldierFormData['penColor']): Color {
 }
 
 export async function fillPdf(
-  formData: SoldierFormData,
-  platoon: Platoon
+  formData: SoldierFormData
 ): Promise<Uint8Array> {
   // Load template
   const templateUrl = import.meta.env.BASE_URL + 'fly_form_template.pdf'
@@ -51,13 +51,17 @@ export async function fillPdf(
   function drawFitted(text: string, fieldName: keyof typeof COORDS) {
     if (!text) return
     const box = COORDS[fieldName]
-    const { lines, size, drawX, drawY, lineHeight } = fitText(text, box, selectedFont)
+    const printableText = formatPdfTextForBidi(text)
+    const { lines, size, drawX, drawY, lineHeight } = fitText(printableText, box, selectedFont)
     lines.forEach((line, i) => {
+      const textWidth = selectedFont.widthOfTextAtSize(line, size)
       const x = box.align === 'right'
-        ? box.x + box.width - selectedFont.widthOfTextAtSize(line, size)
-        : drawX
+        ? box.x + box.width - textWidth
+        : box.align === 'left'
+          ? box.x
+          : box.x + (box.width - textWidth) / 2
       page.drawText(line, {
-        x,
+        x: lines.length === 1 ? drawX : x,
         y: drawY - i * lineHeight,
         size,
         font: selectedFont,
@@ -73,8 +77,11 @@ export async function fillPdf(
   drawFitted(formData.rank,           'rank')
   drawFitted(formData.travelPurpose,  'travelPurpose')
 
-  const contactAddress = [formData.contactStreet, formData.contactHouseNumber, formData.contactCity]
-    .filter(Boolean).join(' ')
+  const contactAddress = formatContactAddressForPdf(
+    formData.contactStreet,
+    formData.contactHouseNumber,
+    formData.contactCity,
+  )
   drawFitted(formData.contactLastName,  'contactLastName')
   drawFitted(formData.contactFirstName, 'contactFirstName')
   drawFitted(contactAddress,            'contactAddress')
@@ -90,8 +97,9 @@ export async function fillPdf(
   const flightRoute = formData.flightRouteStops.filter(Boolean).join(' - ')
   drawFitted(flightRoute, 'flightRoute')
 
-  // Section 3 — Commander (from platoon config)
-  const { commander } = platoon
+  // Section 3 — Commander (from form data)
+  const commander = formData.commander
+  if (!commander) throw new Error('Commander is required')
   drawFitted(commander.personalNumber, 'commanderPersonalNumber')
   drawFitted(commander.rank,           'commanderRank')
   drawFitted(commander.name,           'commanderName')
