@@ -206,39 +206,6 @@ export function SoldierForm() {
       </div>
       <form onSubmit={handleSubmit} style={formStyle}>
 
-        {form.commander && (
-          <div style={{
-            padding: '1rem',
-            background: '#f3f4f6',
-            borderRadius: '0.5rem',
-            marginBottom: '1.5rem',
-            borderLeft: '4px solid #3b82f6'
-          }}>
-            <h2 style={{ margin: '0 0 1rem 0', color: '#1f2937' }}>פרטי המפקד</h2>
-            <div className="form-row">
-              <div className="field">
-                <label>שם מלא</label>
-                <input value={form.commander.name} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
-              </div>
-              <div className="field">
-                <label>דרגה</label>
-                <input value={form.commander.rank} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="field">
-                <label>מספר אישי</label>
-                <input value={form.commander.personalNumber} readOnly style={{ background: '#e5e7eb', cursor: 'not-allowed' }} />
-              </div>
-            </div>
-            <div className="field">
-              <label>חתימה</label>
-              <div style={{ padding: '0.75rem', background: 'white', borderRadius: '0.25rem', border: '1px solid #d1d5db' }}>
-                <div dangerouslySetInnerHTML={{ __html: form.commander.signatureSvg }} />
-              </div>
-            </div>
-          </div>
-        )}
 
         <h2>1. פרטי משרת המילואים</h2>
 
@@ -429,6 +396,12 @@ export function SoldierForm() {
           {loading ? 'מייצר טופס...' : 'הורד טופס ממולא'}
         </button>
       </form>
+
+      {form.commander && (
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
+          מפקד: <strong>{form.commander.name}</strong>
+        </div>
+      )}
     </div>
   )
 }
