@@ -9,7 +9,7 @@ export interface CommanderConfig {
   name: string;
   rank: string;
   personalNumber: string;
-  signatureSvg: string;
+  commanderId: string;
   penColor: PenColor;
   fontStyle: FontStyle;
 }
