@@ -109,8 +109,8 @@ export async function fillPdf(
   drawFitted(todayFormatted(),         'commanderDate')
 
   // Commander signature (SVG → PNG → embed)
-  // TODO: Implement signature lookup by commanderId
-  // For now, signature is optional and will be implemented in SoldierForm
+  // Signature lookup by commanderId is implemented in SoldierForm via getSignatureSvg()
+  // TODO: Implement PDF signature embedding (svgToPng conversion and image positioning)
   // if (commander.signatureSvg) {
   //   const sigPng = await svgToPng(commander.signatureSvg)
   //   const sigImage = await pdfDoc.embedPng(sigPng)
