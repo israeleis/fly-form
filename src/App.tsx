@@ -1,7 +1,6 @@
 import { HashRouter, Routes, Route, NavLink, useSearchParams } from 'react-router-dom'
 import { SoldierForm } from './pages/SoldierForm'
 import { CommanderSetup } from './pages/CommanderSetup'
-import { RedirectCommander } from './pages/RedirectCommander'
 
 function NavBar() {
   const [searchParams] = useSearchParams()
@@ -51,7 +50,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<SoldierForm />} />
         <Route path="/commander" element={<CommanderSetup />} />
-        <Route path="/c/:key" element={<RedirectCommander />} />
       </Routes>
     </HashRouter>
   )
