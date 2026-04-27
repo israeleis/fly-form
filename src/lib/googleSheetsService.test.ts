@@ -52,4 +52,20 @@ describe('fetchCommanderSignatures', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
+
+  it('handles CRLF line endings from Google Sheets', async () => {
+    const csv = 'Timestamp,id,sign\r\n2024-01-01,israel,PHN2Zy8+\r\n'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(csv),
+    }))
+    const result = await fetchCommanderSignatures()
+    expect(result?.['israel']).toBe('PHN2Zy8+')
+  })
+
+  it('returns null when response is not ok', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
+    const result = await fetchCommanderSignatures()
+    expect(result).toBeNull()
+  })
 })

@@ -15,7 +15,7 @@ export async function fetchCommanderSignatures(): Promise<Record<string, string>
     if (!res.ok) return null
 
     const text = await res.text()
-    const lines = text.trim().split('\n')
+    const lines = text.trim().split(/\r?\n/)
     if (lines.length < 2) return {}
 
     // First line is header: find id and sign column indices
@@ -43,8 +43,15 @@ function parseCsvLine(line: string): string[] {
   const result: string[] = []
   let current = ''
   let inQuotes = false
-  for (const char of line) {
+  let i = 0
+  while (i < line.length) {
+    const char = line[i]
     if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"'
+        i += 2
+        continue
+      }
       inQuotes = !inQuotes
     } else if (char === ',' && !inQuotes) {
       result.push(current)
@@ -52,6 +59,7 @@ function parseCsvLine(line: string): string[] {
     } else {
       current += char
     }
+    i++
   }
   result.push(current)
   return result
