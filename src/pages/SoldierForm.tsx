@@ -4,7 +4,6 @@ import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
 import { fetchCommanderSignatures } from '../lib/googleSheetsService'
-import { getSignatureSvg } from '../config/commanderSignatures'
 import { SoldierFormData } from '../types'
 import { getFontStyleOption } from '../lib/fontStyles'
 import { PdfViewer } from '../components/PdfViewer'
@@ -103,9 +102,6 @@ export function SoldierForm() {
           console.error('[SoldierForm] Failed to decode signature base64:', err)
           signatureSvg = ''
         }
-      } else {
-        // Fall back to static commanderSignatures.ts
-        signatureSvg = getSignatureSvg(decoded.commanderId) ?? ''
       }
 
       setForm((prev) => ({
