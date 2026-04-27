@@ -18,8 +18,8 @@ describe('submitCommanderSignature', () => {
     )
 
     const body = new URLSearchParams(mockFetch.mock.calls[0][1].body as string)
-    expect(body.get('entry.2106411983')).toBe('israel')
-    expect(body.get('entry.1258428213')).toBe(btoa(unescape(encodeURIComponent('<svg/>'))))
+    expect(body.get('entry.481316437')).toBe('israel')
+    expect(body.get('entry.364629533')).toBe(btoa(unescape(encodeURIComponent('<svg/>'))))
     expect(body.get('fvv')).toBe('1')
     expect(body.get('pageHistory')).toBe('0')
     expect(body.get('fbzx')).toBeTruthy()

@@ -8,8 +8,8 @@ export async function submitCommanderSignature(
   const base64 = btoa(unescape(encodeURIComponent(signatureSvg)))
 
   const body = new URLSearchParams()
-  body.set('entry.2106411983', commanderId)
-  body.set('entry.1258428213', base64)
+  body.set('entry.481316437', commanderId)
+  body.set('entry.364629533', base64)
   body.set('fvv', '1')
   body.set('pageHistory', '0')
   // fbzx is a session token Google Forms expects; any large integer works for anonymous forms
