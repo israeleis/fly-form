@@ -80,7 +80,7 @@ export function CommanderSetup() {
     setCheckingExisting(false)
   }
 
-  function handleSubmitSignature() {
+  async function handleSubmitSignature() {
     setError('')
     if (!form.personalNumber.trim()) {
       setError('יש למלא מספר אישי לפני הגשת חתימה')
@@ -91,11 +91,16 @@ export function CommanderSetup() {
       return
     }
     setSubmitting(true)
-    submitCommanderSignature(form.personalNumber.trim(), form.signatureSvg)
-    clearSignaturesCache()
-    setSignatureSubmitted(true)
-    setExistingSignature(true)
-    setSubmitting(false)
+    try {
+      await submitCommanderSignature(form.personalNumber.trim(), form.signatureSvg)
+      clearSignaturesCache()
+      setSignatureSubmitted(true)
+      setExistingSignature(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'שגיאה בשליחת החתימה')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const selectedFont = getFontStyleOption(form.fontStyle)
