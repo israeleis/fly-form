@@ -24,9 +24,5 @@ export function formatContactAddressForPdf(
   houseNumber: string,
   city: string,
 ): string {
-  return formatPdfTextForBidi(
-    [street, houseNumber, city]
-      .filter(Boolean)
-      .join(' ')
-  )
+  return [street, houseNumber, city].filter(Boolean).join(' ')
 }

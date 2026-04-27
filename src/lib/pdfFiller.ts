@@ -5,7 +5,7 @@ import { calcDays } from './calcDays'
 import { COORDS, SIGNATURE_BOX } from './pdfCoords'
 import { fitText } from './textFit'
 import { getFontStyleOption } from './fontStyles'
-import { formatContactAddressForPdf, formatPdfTextForBidi } from './bidi'
+import { formatContactAddressForPdf } from './bidi'
 import { appendAttachments } from './attachmentProcessor'
 import { svgToPng } from './svgToPng'
 
@@ -53,9 +53,7 @@ export async function fillPdf(
   function drawFitted(text: string, fieldName: keyof typeof COORDS) {
     if (!text) return
     const box = COORDS[fieldName]
-    // Skip bidi processing for numeric-only fields
-    const isNumericOnly = /^[0-9\-+/.:]+$/.test(text)
-    const printableText = isNumericOnly ? text : formatPdfTextForBidi(text)
+    const printableText = text
     const { lines, size, drawX, drawY, lineHeight } = fitText(printableText, box, selectedFont)
     lines.forEach((line, i) => {
       const textWidth = selectedFont.widthOfTextAtSize(line, size)
