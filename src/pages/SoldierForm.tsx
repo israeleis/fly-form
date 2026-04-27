@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
+import { fetchCommanderSignatures } from '../lib/googleSheetsService'
 import { getSignatureSvg } from '../config/commanderSignatures'
 import { SoldierFormData, PenColor } from '../types'
 import { getFontStyleOption } from '../lib/fontStyles'
@@ -73,6 +74,7 @@ export function SoldierForm() {
   const [attachmentError, setAttachmentError] = useState('')
   const [downloadSuccess, setDownloadSuccess] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [signaturesLoading, setSignaturesLoading] = useState(false)
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
@@ -84,33 +86,47 @@ export function SoldierForm() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
   }, [form])
 
-  // Parse commander from URL on mount
+  // Parse commander from URL on mount — fetch signatures from Sheets with static fallback
   useEffect(() => {
     const encodedCommander = searchParams.get('c')
-    if (encodedCommander) {
-      const decoded = decodeConfig(encodedCommander)
-      if (decoded) {
-        // Lookup signature by commanderId
-        const signature = getSignatureSvg(decoded.commanderId)
+    if (!encodedCommander) return
 
-        // Create commander object with signature
-        const commanderWithSignature = {
+    const decoded = decodeConfig(encodedCommander)
+    if (!decoded) {
+      setUrlWarning('לא הצליח לטעון את פרטי המפקד מהקישור. יאפשר לך למלא ידנית.')
+      return
+    }
+
+    setSignaturesLoading(true)
+    fetchCommanderSignatures().then((sheetsSignatures) => {
+      const signatureBase64 = sheetsSignatures?.[decoded.commanderId] ?? null
+
+      let signatureSvg = ''
+      if (signatureBase64) {
+        try {
+          signatureSvg = decodeURIComponent(escape(atob(signatureBase64)))
+        } catch {
+          signatureSvg = ''
+        }
+      } else {
+        // Fall back to static commanderSignatures.ts
+        signatureSvg = getSignatureSvg(decoded.commanderId) ?? ''
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        commander: {
           name: decoded.name,
           rank: decoded.rank,
           personalNumber: decoded.personalNumber,
-          signatureSvg: signature || '',
-        }
-
-        setForm((prev) => ({
-          ...prev,
-          commander: commanderWithSignature,
-          penColor: decoded.penColor,
-          fontStyle: decoded.fontStyle,
-        }))
-      } else {
-        setUrlWarning('לא הצליח לטעון את פרטי המפקד מהקישור. יאפשר לך למלא ידנית.')
-      }
-    }
+          signatureSvg,
+        },
+        penColor: decoded.penColor,
+        fontStyle: decoded.fontStyle,
+      }))
+    }).finally(() => {
+      setSignaturesLoading(false)
+    })
   }, [searchParams])
 
   const stayDays = useMemo(
@@ -417,6 +433,9 @@ export function SoldierForm() {
           {attachmentError && <p className="error" role="alert">{attachmentError}</p>}
         </div>
 
+        {signaturesLoading && (
+          <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>טוען פרטי מפקד...</p>
+        )}
         {urlWarning && <p style={{ color: '#d97706', fontSize: '0.9rem', marginBottom: '1rem' }}>{urlWarning}</p>}
         {error && <p className="error" role="alert">{error}</p>}
         {downloadSuccess && (
