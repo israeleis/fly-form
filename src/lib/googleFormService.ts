@@ -10,13 +10,14 @@ export async function submitCommanderSignature(
   const body = new URLSearchParams()
   body.set('entry.2106411983', commanderId)
   body.set('entry.1258428213', base64)
+  body.set('submit', 'Submit')
 
   try {
     await fetch(FORM_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
+      body: body.toString(),
     })
   } catch (err) {
     console.error('[googleFormService] submit failed:', err)

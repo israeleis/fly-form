@@ -21,9 +21,10 @@ describe('submitCommanderSignature', () => {
       })
     )
 
-    const body = mockFetch.mock.calls[0][1].body as URLSearchParams
+    const body = new URLSearchParams(mockFetch.mock.calls[0][1].body as string)
     expect(body.get('entry.2106411983')).toBe('israel')
     expect(body.get('entry.1258428213')).toBe(btoa(unescape(encodeURIComponent('<svg/>'))))
+    expect(body.get('submit')).toBe('Submit')
   })
 
   it('throws a Hebrew error message on network failure', async () => {
