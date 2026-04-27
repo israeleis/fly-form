@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { SignaturePad } from '../components/SignaturePad'
 import { encodeConfig } from '../lib/configEncoder'
 import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
@@ -10,7 +10,6 @@ interface CommanderData {
   name: string
   rank: string
   personalNumber: string
-  commanderId: string
   signatureSvg: string
   penColor: PenColor
   fontStyle: FontStyle
@@ -26,7 +25,6 @@ const EMPTY: CommanderData = {
   name: '',
   rank: '',
   personalNumber: '',
-  commanderId: '',
   signatureSvg: '',
   penColor: 'black',
   fontStyle: 'rubik',
@@ -36,8 +34,6 @@ export function CommanderSetup() {
   const [form, setForm] = useState<CommanderData>(EMPTY)
   const [error, setError] = useState('')
   const [copiedLink, setCopiedLink] = useState(false)
-  const [signatureBase64, setSignatureBase64] = useState('')
-  const [copiedWhatsApp, setCopiedWhatsApp] = useState(false)
   const [signatureSubmitted, setSignatureSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [existingSignature, setExistingSignature] = useState(false)
@@ -47,17 +43,10 @@ export function CommanderSetup() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  function handleSignatureSaved(svg: string) {
-    update('signatureSvg', svg)
-    // Convert SVG to base64
-    const base64 = btoa(unescape(encodeURIComponent(svg)))
-    setSignatureBase64(base64)
-  }
-
   function handleGenerateLink() {
     setError('')
-    if (!form.commanderId.trim()) {
-      setError('יש למלא את ID המפקד לפני יצירת קישור')
+    if (!form.personalNumber.trim()) {
+      setError('יש למלא מספר אישי לפני יצירת קישור')
       return
     }
 
@@ -65,7 +54,7 @@ export function CommanderSetup() {
       name: form.name,
       rank: form.rank,
       personalNumber: form.personalNumber,
-      commanderId: form.commanderId,
+      commanderId: form.personalNumber,
       penColor: form.penColor,
       fontStyle: form.fontStyle,
     }
@@ -82,18 +71,8 @@ export function CommanderSetup() {
     })
   }
 
-  function handleCopySignatureBase64() {
-    if (!signatureBase64) return
-    navigator.clipboard.writeText(signatureBase64).then(() => {
-      setCopiedWhatsApp(true)
-      setTimeout(() => setCopiedWhatsApp(false), 3000)
-    }).catch(() => {
-      setError('לא הצליח להעתיק חתימה')
-    })
-  }
-
-  async function handleCommanderIdBlur() {
-    const id = form.commanderId.trim()
+  async function handlePersonalNumberBlur() {
+    const id = form.personalNumber.trim()
     if (!id) return
     setCheckingExisting(true)
     const signatures = await fetchCommanderSignatures()
@@ -103,8 +82,8 @@ export function CommanderSetup() {
 
   async function handleSubmitSignature() {
     setError('')
-    if (!form.commanderId.trim()) {
-      setError('יש למלא את ID המפקד לפני הגשת חתימה')
+    if (!form.personalNumber.trim()) {
+      setError('יש למלא מספר אישי לפני הגשת חתימה')
       return
     }
     if (!form.signatureSvg) {
@@ -113,7 +92,7 @@ export function CommanderSetup() {
     }
     setSubmitting(true)
     try {
-      await submitCommanderSignature(form.commanderId.trim(), form.signatureSvg)
+      await submitCommanderSignature(form.personalNumber.trim(), form.signatureSvg)
       clearSignaturesCache()
       setSignatureSubmitted(true)
       setExistingSignature(true)
@@ -129,7 +108,7 @@ export function CommanderSetup() {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
   } as CSSProperties
 
-  const canGenerateLink = !!(form.commanderId.trim() && (signatureSubmitted || existingSignature))
+  const canGenerateLink = !!(form.personalNumber.trim() && (signatureSubmitted || existingSignature))
 
   return (
     <div className="page">
@@ -151,14 +130,10 @@ export function CommanderSetup() {
         <div className="form-row">
           <div className="field">
             <label>מספר אישי</label>
-            <input value={form.personalNumber} onChange={(e) => update('personalNumber', e.target.value)} required />
-          </div>
-          <div className="field">
-            <label>ID מפקד</label>
             <input
-              value={form.commanderId}
-              onChange={(e) => update('commanderId', e.target.value)}
-              onBlur={handleCommanderIdBlur}
+              value={form.personalNumber}
+              onChange={(e) => update('personalNumber', e.target.value)}
+              onBlur={handlePersonalNumberBlur}
               required
             />
           </div>
@@ -208,34 +183,16 @@ export function CommanderSetup() {
         </div>
 
         <h2>חתימה</h2>
-        <SignaturePad onSave={handleSignatureSaved} />
+        <SignaturePad onSave={(svg) => update('signatureSvg', svg)} />
         {form.signatureSvg && (
           <>
             <p style={{ color: '#16a34a', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ חתימה נשמרה</p>
-            <button
-              type="button"
-              onClick={handleCopySignatureBase64}
-              aria-label="העתק חתימה base64 לשיתוף ב-WhatsApp"
-              style={{
-                marginTop: '0.75rem',
-                background: '#25D366',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              {copiedWhatsApp ? '✓ הועתק' : 'העתק חתימה base64'}
-            </button>
             <button
               type="button"
               onClick={handleSubmitSignature}
               disabled={submitting}
               style={{
                 marginTop: '0.75rem',
-                marginRight: '0.5rem',
                 background: signatureSubmitted ? '#16a34a' : '#2563eb',
                 color: 'white',
                 padding: '0.5rem 1rem',
