@@ -175,6 +175,7 @@ export function CommanderSetup() {
             <button
               type="button"
               onClick={handleCopySignatureBase64}
+              aria-label="העתק חתימה base64 לשיתוף ב-WhatsApp"
               style={{
                 marginTop: '0.75rem',
                 background: '#25D366',
