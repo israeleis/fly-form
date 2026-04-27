@@ -109,7 +109,8 @@ export async function fillPdf(
 
   // Commander signature (SVG → PNG → embed)
   if (commander.signatureSvg) {
-    const sigPng = await svgToPng(commander.signatureSvg)
+    const blueSvg = commander.signatureSvg.replace(/stroke="[^"]+"/g, 'stroke="#1a60d1"')
+    const sigPng = await svgToPng(blueSvg)
     const sigImage = await pdfDoc.embedPng(sigPng)
     const { x, y, width, height } = SIGNATURE_BOX
     page.drawImage(sigImage, { x, y, width, height })
