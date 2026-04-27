@@ -22,15 +22,11 @@ describe('configEncoder', () => {
   })
 
   it('should return null for invalid encoded string', () => {
-    const result = decodeConfig('invalid!!!data')
-    expect(result).toBeNull()
+    expect(decodeConfig('invalid!!!data')).toBeNull()
   })
 
-  it('should return null if decoded JSON is missing required fields', () => {
-    const incomplete = { name: 'test' }
-    const json = JSON.stringify(incomplete)
-    const encoded = Buffer.from(json).toString('base64')
-    const result = decodeConfig(encoded)
-    expect(result).toBeNull()
+  it('should return null if any field is missing', () => {
+    const partial = btoa(unescape(encodeURIComponent('only|two')))
+    expect(decodeConfig(partial)).toBeNull()
   })
 })

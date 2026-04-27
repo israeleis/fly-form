@@ -44,7 +44,7 @@ export const COORDS: Record<string, FieldBox> = {
   stayDays:           { x: 113, y: 512, width: 93, height: 32 },
 
   // Section 2b — Flight route (right-aligned, supports multiline)
-  flightRoute: { x: 90, y: 428, width: 420, height: 35, align: 'right', maxLines: 2 },
+  flightRoute: { x: 90, y: 430, width: 420, height: 35, align: 'right', maxLines: 2 },
 
   // Section 3 — Commander details
   // These fields sit inside the underline gaps, not on top of the printed labels.
