@@ -1,7 +1,9 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import { SignaturePad } from '../components/SignaturePad'
 import { encodeConfig } from '../lib/configEncoder'
 import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
+import { submitCommanderSignature } from '../lib/googleFormService'
+import { fetchCommanderSignatures, clearSignaturesCache } from '../lib/googleSheetsService'
 import type { PenColor, FontStyle } from '../types'
 
 interface CommanderData {
@@ -36,6 +38,10 @@ export function CommanderSetup() {
   const [copiedLink, setCopiedLink] = useState(false)
   const [signatureBase64, setSignatureBase64] = useState('')
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false)
+  const [signatureSubmitted, setSignatureSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [existingSignature, setExistingSignature] = useState(false)
+  const [checkingExisting, setCheckingExisting] = useState(false)
 
   function update(field: keyof CommanderData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -50,10 +56,6 @@ export function CommanderSetup() {
 
   function handleGenerateLink() {
     setError('')
-    if (!form.signatureSvg) {
-      setError('יש לצייר ולשמור חתימה לפני יצירת קישור')
-      return
-    }
     if (!form.commanderId.trim()) {
       setError('יש למלא את ID המפקד לפני יצירת קישור')
       return
@@ -72,7 +74,6 @@ export function CommanderSetup() {
     const baseUrl = window.location.origin + window.location.pathname
     const shareUrl = `${baseUrl}#/?c=${encoded}`
 
-    // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopiedLink(true)
       setTimeout(() => setCopiedLink(false), 3000)
@@ -91,10 +92,44 @@ export function CommanderSetup() {
     })
   }
 
+  async function handleCommanderIdBlur() {
+    const id = form.commanderId.trim()
+    if (!id) return
+    setCheckingExisting(true)
+    const signatures = await fetchCommanderSignatures()
+    setExistingSignature(signatures !== null && id in signatures)
+    setCheckingExisting(false)
+  }
+
+  async function handleSubmitSignature() {
+    setError('')
+    if (!form.commanderId.trim()) {
+      setError('יש למלא את ID המפקד לפני הגשת חתימה')
+      return
+    }
+    if (!form.signatureSvg) {
+      setError('יש לצייר ולשמור חתימה לפני הגשה')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await submitCommanderSignature(form.commanderId.trim(), form.signatureSvg)
+      clearSignaturesCache()
+      setSignatureSubmitted(true)
+      setExistingSignature(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'שגיאה בשליחת החתימה')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const selectedFont = getFontStyleOption(form.fontStyle)
   const formStyle = {
     ['--selected-form-font' as string]: selectedFont.cssFamily,
   } as CSSProperties
+
+  const canGenerateLink = !!(form.commanderId.trim() && (signatureSubmitted || existingSignature))
 
   return (
     <div className="page">
@@ -120,7 +155,12 @@ export function CommanderSetup() {
           </div>
           <div className="field">
             <label>ID מפקד</label>
-            <input value={form.commanderId} onChange={(e) => update('commanderId', e.target.value)} required />
+            <input
+              value={form.commanderId}
+              onChange={(e) => update('commanderId', e.target.value)}
+              onBlur={handleCommanderIdBlur}
+              required
+            />
           </div>
         </div>
 
@@ -189,20 +229,49 @@ export function CommanderSetup() {
             >
               {copiedWhatsApp ? '✓ הועתק' : 'העתק חתימה base64'}
             </button>
+            <button
+              type="button"
+              onClick={handleSubmitSignature}
+              disabled={submitting}
+              style={{
+                marginTop: '0.75rem',
+                marginRight: '0.5rem',
+                background: signatureSubmitted ? '#16a34a' : '#2563eb',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: 'none',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                opacity: submitting ? 0.7 : 1,
+              }}
+            >
+              {submitting ? 'מגיש...' : signatureSubmitted ? '✓ חתימה הוגשה' : 'עדכן חתימה'}
+            </button>
           </>
         )}
 
-        {form.signatureSvg && (
-          <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem' }}>
-            <h3 style={{ margin: '0 0 0.5rem 0' }}>שתף קישור עם חיילים</h3>
-            <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 0.75rem 0' }}>
-              חיילים יוכלו לפתוח את הקישור וההפרטים שלך יתמלאו אוטומטית עם הסגנון שבחרת
-            </p>
-            <button type="button" onClick={handleGenerateLink} style={{ background: '#10b981' }}>
-              {copiedLink ? '✓ הועתק' : 'צור קישור משותף'}
-            </button>
-          </div>
-        )}
+        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0f9ff', borderRadius: '0.5rem' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>שתף קישור עם חיילים</h3>
+          <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 0.75rem 0' }}>
+            {checkingExisting
+              ? 'בודק חתימה קיימת...'
+              : canGenerateLink
+                ? 'חיילים יוכלו לפתוח את הקישור וההפרטים שלך יתמלאו אוטומטית'
+                : 'יש להגיש חתימה לפני יצירת קישור'}
+          </p>
+          <button
+            type="button"
+            onClick={handleGenerateLink}
+            disabled={!canGenerateLink || checkingExisting}
+            style={{
+              background: canGenerateLink ? '#10b981' : '#9ca3af',
+              cursor: canGenerateLink ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {copiedLink ? '✓ הועתק' : 'צור קישור משותף'}
+          </button>
+        </div>
 
         {error && <p className="error">{error}</p>}
       </form>
