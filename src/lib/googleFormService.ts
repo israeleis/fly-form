@@ -18,7 +18,8 @@ export async function submitCommanderSignature(
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
     })
-  } catch {
+  } catch (err) {
+    console.error('[googleFormService] submit failed:', err)
     throw new Error('שגיאת רשת — לא הצליח לשלוח חתימה')
   }
 }

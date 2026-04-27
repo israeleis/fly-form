@@ -17,6 +17,7 @@ describe('submitCommanderSignature', () => {
       expect.objectContaining({
         method: 'POST',
         mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
     )
 
