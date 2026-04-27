@@ -7,7 +7,7 @@ describe('configEncoder', () => {
     name: 'ישראל ישראלי',
     rank: 'סגן',
     personalNumber: '1234567',
-    signatureSvg: '<svg>test</svg>',
+    commanderId: 'cmd-123',
     penColor: 'black',
     fontStyle: 'rubik',
   }

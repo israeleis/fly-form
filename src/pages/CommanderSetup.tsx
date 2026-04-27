@@ -8,6 +8,7 @@ interface CommanderData {
   name: string
   rank: string
   personalNumber: string
+  commanderId: string
   signatureSvg: string
   penColor: PenColor
   fontStyle: FontStyle
@@ -23,6 +24,7 @@ const EMPTY: CommanderData = {
   name: '',
   rank: '',
   personalNumber: '',
+  commanderId: '',
   signatureSvg: '',
   penColor: 'black',
   fontStyle: 'rubik',
@@ -48,7 +50,7 @@ export function CommanderSetup() {
       name: form.name,
       rank: form.rank,
       personalNumber: form.personalNumber,
-      signatureSvg: form.signatureSvg,
+      commanderId: form.commanderId,
       penColor: form.penColor,
       fontStyle: form.fontStyle,
     }
@@ -92,6 +94,10 @@ export function CommanderSetup() {
           <div className="field">
             <label>מספר אישי</label>
             <input value={form.personalNumber} onChange={(e) => update('personalNumber', e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>ID מפקד</label>
+            <input value={form.commanderId} onChange={(e) => update('commanderId', e.target.value)} required />
           </div>
         </div>
 
