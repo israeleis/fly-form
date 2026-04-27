@@ -34,9 +34,18 @@ export function CommanderSetup() {
   const [form, setForm] = useState<CommanderData>(EMPTY)
   const [error, setError] = useState('')
   const [copiedLink, setCopiedLink] = useState(false)
+  const [signatureBase64, setSignatureBase64] = useState('')
+  const [copiedWhatsApp, setCopiedWhatsApp] = useState(false)
 
   function update(field: keyof CommanderData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function handleSignatureSaved(svg: string) {
+    update('signatureSvg', svg)
+    // Convert SVG to base64
+    const base64 = btoa(unescape(encodeURIComponent(svg)))
+    setSignatureBase64(base64)
   }
 
   function handleGenerateLink() {
@@ -69,6 +78,16 @@ export function CommanderSetup() {
       setTimeout(() => setCopiedLink(false), 3000)
     }).catch(() => {
       setError('לא הצליח להעתיק קישור')
+    })
+  }
+
+  function handleCopySignatureBase64() {
+    if (!signatureBase64) return
+    navigator.clipboard.writeText(signatureBase64).then(() => {
+      setCopiedWhatsApp(true)
+      setTimeout(() => setCopiedWhatsApp(false), 3000)
+    }).catch(() => {
+      setError('לא הצליח להעתיק חתימה')
     })
   }
 
@@ -149,9 +168,27 @@ export function CommanderSetup() {
         </div>
 
         <h2>חתימה</h2>
-        <SignaturePad onSave={(svg) => update('signatureSvg', svg)} />
+        <SignaturePad onSave={handleSignatureSaved} />
         {form.signatureSvg && (
-          <p style={{ color: '#16a34a', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ חתימה נשמרה</p>
+          <>
+            <p style={{ color: '#16a34a', fontSize: '0.85rem', marginTop: '0.5rem' }}>✓ חתימה נשמרה</p>
+            <button
+              type="button"
+              onClick={handleCopySignatureBase64}
+              style={{
+                marginTop: '0.75rem',
+                background: '#25D366',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+              }}
+            >
+              {copiedWhatsApp ? '✓ הועתק' : 'העתק חתימה base64'}
+            </button>
+          </>
         )}
 
         {form.signatureSvg && (
