@@ -105,7 +105,8 @@ export function SoldierForm() {
       if (signatureBase64) {
         try {
           signatureSvg = decodeURIComponent(escape(atob(signatureBase64)))
-        } catch {
+        } catch (err) {
+          console.error('[SoldierForm] Failed to decode signature base64:', err)
           signatureSvg = ''
         }
       } else {
