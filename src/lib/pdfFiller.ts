@@ -2,11 +2,12 @@ import { PDFDocument, rgb, Color } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 import { SoldierFormData } from '../types'
 import { calcDays } from './calcDays'
-import { COORDS } from './pdfCoords'
+import { COORDS, SIGNATURE_BOX } from './pdfCoords'
 import { fitText } from './textFit'
 import { getFontStyleOption } from './fontStyles'
 import { formatContactAddressForPdf, formatPdfTextForBidi } from './bidi'
 import { appendAttachments } from './attachmentProcessor'
+import { svgToPng } from './svgToPng'
 
 function formatDate(iso: string): string {
   if (!iso) return ''
@@ -109,14 +110,12 @@ export async function fillPdf(
   drawFitted(todayFormatted(),         'commanderDate')
 
   // Commander signature (SVG → PNG → embed)
-  // Signature lookup by commanderId is implemented in SoldierForm via getSignatureSvg()
-  // TODO: Implement PDF signature embedding (svgToPng conversion and image positioning)
-  // if (commander.signatureSvg) {
-  //   const sigPng = await svgToPng(commander.signatureSvg)
-  //   const sigImage = await pdfDoc.embedPng(sigPng)
-  //   const { x, y, width, height } = SIGNATURE_BOX
-  //   page.drawImage(sigImage, { x, y, width, height })
-  // }
+  if (commander.signatureSvg) {
+    const sigPng = await svgToPng(commander.signatureSvg)
+    const sigImage = await pdfDoc.embedPng(sigPng)
+    const { x, y, width, height } = SIGNATURE_BOX
+    page.drawImage(sigImage, { x, y, width, height })
+  }
 
   // Append any attached files as additional pages
   if (attachments.length > 0) {
