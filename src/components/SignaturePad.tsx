@@ -14,7 +14,7 @@ export function SignaturePad({ onSave }: Props) {
   useEffect(() => {
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
-    ctx.strokeStyle = '#000'
+    ctx.strokeStyle = '#1a60d1'
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
@@ -81,7 +81,7 @@ export function SignaturePad({ onSave }: Props) {
       if (pts.length === 0) return ''
       const [start, ...rest] = pts
       const d = `M${start[0]},${start[1]} ` + rest.map(([x, y]) => `L${x},${y}`).join(' ')
-      return `<path d="${d}" stroke="black" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+      return `<path d="${d}" stroke="#1a60d1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
     }).join('\n')
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">\n${pathStrings}\n</svg>`

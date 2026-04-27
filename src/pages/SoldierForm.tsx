@@ -5,7 +5,7 @@ import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
 import { fetchCommanderSignatures } from '../lib/googleSheetsService'
 import { getSignatureSvg } from '../config/commanderSignatures'
-import { SoldierFormData, PenColor } from '../types'
+import { SoldierFormData } from '../types'
 import { getFontStyleOption } from '../lib/fontStyles'
 import { PdfViewer } from '../components/PdfViewer'
 
@@ -25,12 +25,6 @@ const IDF_RANKS: { value: string; label: string }[] = [
   { value: 'סא"ל',  label: 'סא"ל — סגן אלוף' },
   { value: 'אל"מ',  label: 'אל"מ — אלוף משנה' },
   { value: 'אלוף',  label: 'אלוף' },
-]
-
-const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
-  { value: 'black',     label: 'שחור',    hex: '#171717' },
-  { value: 'dark-blue', label: 'כחול כהה', hex: '#0d1b6b' },
-  { value: 'blue',      label: 'כחול',    hex: '#1a60d1' },
 ]
 
 const STORAGE_KEY = 'soldierFormData'
@@ -53,7 +47,7 @@ const EMPTY: SoldierFormData = {
   flightRouteStops: ['', ''],
   commander: null,
   penColor: 'black',
-  fontStyle: 'rubik',
+  fontStyle: 'david-libre',
 }
 
 function loadSaved(): SoldierFormData {
@@ -122,8 +116,6 @@ export function SoldierForm() {
           personalNumber: decoded.personalNumber,
           signatureSvg,
         },
-        penColor: decoded.penColor,
-        fontStyle: decoded.fontStyle,
       }))
     }).finally(() => {
       setSignaturesLoading(false)
@@ -387,21 +379,6 @@ export function SoldierForm() {
           </div>
         )}
 
-
-        <div className="field">
-          <label>בחר צבע עט</label>
-          <div className="pen-color-row">
-            {PEN_COLORS.map(({ value, label, hex }) => (
-              <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
-                <input type="radio" name="penColor" value={value}
-                  checked={form.penColor === value}
-                  onChange={() => update('penColor', value)} />
-                <span className="pen-swatch" style={{ background: hex }} />
-                {label}
-              </label>
-            ))}
-          </div>
-        </div>
 
         <h2>קבצים מצורפים (אופציונלי)</h2>
         <div className="field">

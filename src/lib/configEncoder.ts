@@ -37,16 +37,10 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
       'rank' in parsed &&
       'personalNumber' in parsed &&
       'commanderId' in parsed &&
-      'penColor' in parsed &&
-      'fontStyle' in parsed &&
       typeof p.name === 'string' &&
       typeof p.rank === 'string' &&
       typeof p.personalNumber === 'string' &&
-      typeof p.commanderId === 'string' &&
-      typeof p.penColor === 'string' &&
-      typeof p.fontStyle === 'string' &&
-      ['black', 'dark-blue', 'blue'].includes(p.penColor) &&
-      ['rubik', 'alef', 'david-libre', 'amatic-sc', 'caveat', 'fredoka-one'].includes(p.fontStyle)
+      typeof p.commanderId === 'string'
     ) {
       return parsed as CommanderConfig
     }

@@ -1,33 +1,21 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import { SignaturePad } from '../components/SignaturePad'
 import { encodeConfig } from '../lib/configEncoder'
-import { FONT_STYLE_OPTIONS, getFontStyleOption } from '../lib/fontStyles'
 import { submitCommanderSignature } from '../lib/googleFormService'
 import { fetchCommanderSignatures, clearSignaturesCache } from '../lib/googleSheetsService'
-import type { PenColor, FontStyle } from '../types'
 
 interface CommanderData {
   name: string
   rank: string
   personalNumber: string
   signatureSvg: string
-  penColor: PenColor
-  fontStyle: FontStyle
 }
-
-const PEN_COLORS: { value: PenColor; label: string; hex: string }[] = [
-  { value: 'black',     label: 'שחור',    hex: '#171717' },
-  { value: 'dark-blue', label: 'כחול כהה', hex: '#0d1b6b' },
-  { value: 'blue',      label: 'כחול',    hex: '#1a60d1' },
-]
 
 const EMPTY: CommanderData = {
   name: '',
   rank: '',
   personalNumber: '',
   signatureSvg: '',
-  penColor: 'black',
-  fontStyle: 'rubik',
 }
 
 export function CommanderSetup() {
@@ -55,8 +43,6 @@ export function CommanderSetup() {
       rank: form.rank,
       personalNumber: form.personalNumber,
       commanderId: form.personalNumber,
-      penColor: form.penColor,
-      fontStyle: form.fontStyle,
     }
 
     const encoded = encodeConfig(config)
@@ -103,20 +89,15 @@ export function CommanderSetup() {
     }
   }
 
-  const selectedFont = getFontStyleOption(form.fontStyle)
-  const formStyle = {
-    ['--selected-form-font' as string]: selectedFont.cssFamily,
-  } as CSSProperties
-
   const canGenerateLink = !!(form.personalNumber.trim() && (signatureSubmitted || existingSignature))
 
   return (
     <div className="page">
       <h1>הגדרת מפקד</h1>
       <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-        מלא את הפרטים, בחר סגנון, וחתום. הנתונים יישמרו בקישור משותף.
+        מלא את הפרטים וחתום. הנתונים יישמרו בקישור משותף.
       </p>
-      <form style={formStyle}>
+      <form>
         <div className="form-row">
           <div className="field">
             <label>שם מלא</label>
@@ -136,49 +117,6 @@ export function CommanderSetup() {
               onBlur={handlePersonalNumberBlur}
               required
             />
-          </div>
-        </div>
-
-        <h2>סגנון כתיבה</h2>
-        <div className="field">
-          <label>בחר פונט</label>
-          <div className="font-style-grid" role="radiogroup" aria-label="בחירת פונט">
-            {FONT_STYLE_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className={`font-style-option${form.fontStyle === option.value ? ' selected' : ''}`}
-                style={{ ['--font-preview-family' as string]: option.cssFamily } as CSSProperties}
-              >
-                <input
-                  type="radio"
-                  name="fontStyle"
-                  value={option.value}
-                  checked={form.fontStyle === option.value}
-                  onChange={() => update('fontStyle', option.value)}
-                />
-                <span className="font-style-header">
-                  <span className="font-style-name">{option.label}</span>
-                  <span className="font-style-badge">{option.badge}</span>
-                </span>
-                <span className="font-style-preview">{option.previewText}</span>
-                <span className="font-style-description">{option.description}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="field">
-          <label>בחר צבע עט</label>
-          <div className="pen-color-row">
-            {PEN_COLORS.map(({ value, label, hex }) => (
-              <label key={value} className={`pen-color-option${form.penColor === value ? ' selected' : ''}`}>
-                <input type="radio" name="penColor" value={value}
-                  checked={form.penColor === value}
-                  onChange={() => update('penColor', value)} />
-                <span className="pen-swatch" style={{ background: hex }} />
-                {label}
-              </label>
-            ))}
           </div>
         </div>
 
