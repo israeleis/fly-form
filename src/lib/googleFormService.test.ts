@@ -1,37 +1,55 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { submitCommanderSignature } from './googleFormService'
 
 describe('submitCommanderSignature', () => {
+  let appendedForms: HTMLFormElement[]
+  let appendedIframes: HTMLIFrameElement[]
+
   beforeEach(() => {
+    appendedForms = []
+    appendedIframes = []
+    vi.spyOn(document.body, 'appendChild').mockImplementation((node) => {
+      if (node instanceof HTMLFormElement) appendedForms.push(node)
+      if (node instanceof HTMLIFrameElement) appendedIframes.push(node)
+      return node
+    })
+    vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node)
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
-  it('posts to Google Form with correct entry IDs', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({})
-    vi.stubGlobal('fetch', mockFetch)
+  it('submits form to Google Forms URL with correct entry IDs', () => {
+    submitCommanderSignature('israel', '<svg/>')
 
-    await submitCommanderSignature('israel', '<svg/>')
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://docs.google.com/forms/d/e/1FAIpQLSeC9zxydP45oPRSFhz0lgOU4rW4dSbAt2hrzE5Tw7P5Fy5ZVw/formResponse',
-      expect.objectContaining({
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      })
+    expect(appendedForms).toHaveLength(1)
+    const form = appendedForms[0]
+    expect(form.action).toBe(
+      'https://docs.google.com/forms/d/e/1FAIpQLSeC9zxydP45oPRSFhz0lgOU4rW4dSbAt2hrzE5Tw7P5Fy5ZVw/formResponse'
     )
+    expect(form.method).toBe('post')
 
-    const body = new URLSearchParams(mockFetch.mock.calls[0][1].body as string)
-    expect(body.get('entry.2106411983')).toBe('israel')
-    expect(body.get('entry.1258428213')).toBe(btoa(unescape(encodeURIComponent('<svg/>'))))
-    expect(body.get('submit')).toBe('Submit')
+    const inputs = Array.from(form.querySelectorAll('input'))
+    const byName = (n: string) => inputs.find((i) => i.name === n)?.value
+    expect(byName('entry.2106411983')).toBe('israel')
+    expect(byName('entry.1258428213')).toBe(btoa(unescape(encodeURIComponent('<svg/>'))))
   })
 
-  it('throws a Hebrew error message on network failure', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')))
+  it('creates a hidden iframe as the form target', () => {
+    submitCommanderSignature('israel', '<svg/>')
+    expect(appendedIframes).toHaveLength(1)
+    const iframe = appendedIframes[0]
+    expect(appendedForms[0].target).toBe(iframe.name)
+  })
 
-    await expect(submitCommanderSignature('israel', '<svg/>')).rejects.toThrow(
-      'שגיאת רשת — לא הצליח לשלוח חתימה'
-    )
+  it('cleans up form and iframe after 5 seconds', () => {
+    const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node)
+    submitCommanderSignature('israel', '<svg/>')
+    expect(removeSpy).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(5000)
+    expect(removeSpy).toHaveBeenCalledTimes(2)
   })
 })
