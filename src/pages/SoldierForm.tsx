@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { fillPdf } from '../lib/pdfFiller'
 import { calcDays } from '../lib/calcDays'
 import { decodeConfig } from '../lib/configEncoder'
+import { getSignatureSvg } from '../config/commanderSignatures'
 import { SoldierFormData, PenColor } from '../types'
 import { getFontStyleOption } from '../lib/fontStyles'
 import { PdfViewer } from '../components/PdfViewer'
@@ -89,9 +90,20 @@ export function SoldierForm() {
     if (encodedCommander) {
       const decoded = decodeConfig(encodedCommander)
       if (decoded) {
+        // Lookup signature by commanderId
+        const signature = getSignatureSvg(decoded.commanderId)
+
+        // Create commander object with signature
+        const commanderWithSignature = {
+          name: decoded.name,
+          rank: decoded.rank,
+          personalNumber: decoded.personalNumber,
+          signatureSvg: signature || '',
+        }
+
         setForm((prev) => ({
           ...prev,
-          commander: decoded,
+          commander: commanderWithSignature,
           penColor: decoded.penColor,
           fontStyle: decoded.fontStyle,
         }))

@@ -42,7 +42,7 @@ export interface SoldierFormData {
   returnDate: string;    // ISO date string YYYY-MM-DD
   flightRouteStops: string[];
   // Commander details (from URL or manual entry)
-  commander: CommanderConfig | null;
+  commander: Commander | null;
   // PDF appearance
   penColor: PenColor;
   fontStyle: FontStyle;
