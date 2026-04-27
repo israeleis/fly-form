@@ -45,6 +45,10 @@ export function CommanderSetup() {
       setError('יש לצייר ולשמור חתימה לפני יצירת קישור')
       return
     }
+    if (!form.commanderId.trim()) {
+      setError('יש למלא את ID המפקד לפני יצירת קישור')
+      return
+    }
 
     const config = {
       name: form.name,

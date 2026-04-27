@@ -14,8 +14,6 @@ export function encodeConfig(config: CommanderConfig): string {
 
 export function decodeConfig(encoded: string): CommanderConfig | null {
   try {
-    console.log('[decodeConfig] Starting with encoded length:', encoded.length)
-
     // Convert from URL-safe Base64URL back to Base64
     // Add padding back
     const padding = (4 - (encoded.length % 4)) % 4
@@ -25,12 +23,10 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
 
     const json = LZ.decompressFromBase64(base64)
     if (!json) {
-      console.warn('[decodeConfig] Decompression returned null')
       return null
     }
 
     const parsed = JSON.parse(json) as unknown
-    console.log('[decodeConfig] Parsed config:', parsed)
 
     // Validate all required fields exist
     const p = parsed as Record<string, unknown>
@@ -52,14 +48,11 @@ export function decodeConfig(encoded: string): CommanderConfig | null {
       ['black', 'dark-blue', 'blue'].includes(p.penColor) &&
       ['rubik', 'alef', 'david-libre', 'amatic-sc', 'caveat', 'fredoka-one'].includes(p.fontStyle)
     ) {
-      console.log('[decodeConfig] ✓ Config validated:', p.name)
       return parsed as CommanderConfig
     }
 
-    console.warn('[decodeConfig] Validation failed for config')
     return null
   } catch (err) {
-    console.error('[decodeConfig] Exception:', err)
     return null
   }
 }
